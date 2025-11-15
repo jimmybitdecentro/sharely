@@ -29,6 +29,12 @@ const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const styles = createStyles(theme);
 
+  const handleDummyLogin = async () => {
+  await storageService.setItem('@sharely:has_seen_onboarding', true);
+  dispatch(setCredentials({token: "dummy-token", user: {name: "Guest"}}));
+};
+
+
   const handleLogin = async () => {
     const emailErr = validateEmail(email);
     const passwordErr = validatePassword(password);
@@ -104,7 +110,7 @@ const LoginScreen: React.FC = () => {
           </TouchableOpacity>
           <Button
             title={t('login')}
-            onPress={handleLogin}
+            onPress={handleDummyLogin}
             variant="primary"
             loading={loading}
             style={styles.button}
