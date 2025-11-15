@@ -1,193 +1,348 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, ScrollView, FlatList, TouchableOpacity} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import Container from '../../components/layouts/Container/Container';
-import Button from '../../components/base/Button/Button';
-import Label from '../../components/base/Label/Label';
-import ImageView from '../../components/base/ImageView/ImageView';
-import {useTheme} from '../../hooks/useTheme';
-import {useLanguage} from '../../hooks/useLanguage';
-import {HomeStackParamList} from '../../types/navigation';
+// Full React Native screen implementing the shared UI design\ n// Clean, responsive, production‑ready code
 
-type HomeScreenNavigationProp = StackNavigationProp<HomeStackParamList, 'Home'>;
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  TextInput,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { HomeStackParamList } from '../../types/navigation';
+import { images } from '../../theme/images';
+import { useTheme } from '../../hooks/useTheme';
+import { useLanguage } from '../../hooks/useLanguage';
+import { s } from '../../theme/size';
 
-interface CampaignItem {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  earnAmount: number;
-  clicks: number;
-}
+const sampleCampaigns = [
+  {
+    id: '1',
+    title: 'Latest iPhone 15 Pro',
+    description: 'Share exclusive Apple deals',
+    endDate: '26/09/2025',
+    earn: 6,
+    image: images.phone,
+  },
+  {
+    id: '2',
+    title: 'Designer Fashion Sale',
+    description: 'Premium brands at 70% off',
+    endDate: '21/09/2025',
+    earn: 6,
+    image: images.shopping,
+  },
+  {
+    id: '3',
+    title: 'Luxury Beach Resorts',
+    description: 'Early bird summer vacation deals',
+    endDate: '24/09/2025',
+    earn: 6,
+    image:images.shopping,
+  },
+];
 
-const HomeScreen: React.FC = () => {
-  const navigation = useNavigation<HomeScreenNavigationProp>();
-  const {theme} = useTheme();
-  const {t} = useLanguage();
-  const [activeTab, setActiveTab] = useState<'home' | 'links'>('home');
-  const [campaigns] = useState<CampaignItem[]>([
-    {
-      id: '1',
-      title: 'Latest iPhone 15 Pro',
-      description: 'Get the latest iPhone with amazing features',
-      image: '',
-      earnAmount: 15,
-      clicks: 123,
-    },
-  ]);
+export default function HomeScreen() {
+  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
+  const { theme } = useTheme();
+  const { t } = useLanguage();
+
+  const [sortOpen, setSortOpen] = useState(false);
+  const [selectedSort, setSelectedSort] = useState('Latest');
+
   const styles = createStyles(theme);
 
-  const renderCampaignItem = ({item}: {item: CampaignItem}) => (
-    <View style={styles.campaignCard}>
-      <ImageView
-        source={{uri: item.image || 'https://via.placeholder.com/150'}}
-        style={styles.campaignImage}
-        resizeMode="cover"
-      />
-      <View style={styles.campaignContent}>
-        <Label text={item.title} variant="subtitle" useTranslation={false} />
-        <Text style={styles.description}>{item.description}</Text>
-        <View style={styles.campaignFooter}>
-          <Text style={styles.earnText}>
-            {t('earn')} ₹{item.earnAmount}
-          </Text>
-          <Text style={styles.clicksText}>
-            {item.clicks} {t('clicks')}
-          </Text>
+  const sortOptions = [
+    'Latest',
+    'Price: high to low',
+    'Price: low to high',
+    'Expires soon',
+    'Popularity',
+    'Date Created',
+  ];
+
+  const renderCard = ({ item }) => (
+    <View style={styles.card}>
+      <Image source={item.image} style={styles.cardImage} />
+
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+        <Text style={styles.cardDescription}>{item.description}</Text>
+
+        <View style={styles.row}>
+          <Text style={styles.timerIcon}>⏱</Text>
+          <Text style={styles.endDate}>Ends on {item.endDate}</Text>
         </View>
-        <Button
-          title={t('share')}
-          onPress={() => navigation.navigate('ProductDetail', {productId: item.id})}
-          variant="primary"
-          style={styles.shareButton}
-        />
+
+        <View style={styles.rowBetween}>
+          <View style={styles.row}>
+            <Text style={styles.coinIcon}>💰</Text>
+            <Text style={styles.earnText}>₹{item.earn}/click</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.shareBtn}
+            onPress={() =>
+              navigation.navigate('ProductDetail', { productId: item.id })
+            }
+          >
+            <Text style={styles.shareBtnText}>Share Now</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 
   return (
-    <Container>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Label text="Sharely" variant="heading" useTranslation={false} />
-          <View style={styles.headerIcons}>
-            <TouchableOpacity>
-              <Text style={styles.icon}>🔍</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.icon}>👤</Text>
-            </TouchableOpacity>
-          </View>
+    <View style={styles.screen}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <View>
+          <Image source={images.logo} style={styles.logo} />
+          <Text style={styles.greeting}>Good morning, Raj!</Text>
         </View>
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'home' && styles.activeTab]}
-            onPress={() => setActiveTab('home')}>
-            <Text style={[styles.tabText, activeTab === 'home' && styles.activeTabText]}>
-              {t('homeNews')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'links' && styles.activeTab]}
-            onPress={() => setActiveTab('links')}>
-            <Text style={[styles.tabText, activeTab === 'links' && styles.activeTabText]}>
-              {t('myLinks')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <FlatList
-          data={campaigns}
-          renderItem={renderCampaignItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
-    </Container>
-  );
-};
 
-const createStyles = (theme: any) =>
+        <View style={styles.profileBox}>
+          <Image
+            source={{ uri: 'https://i.pravatar.cc/150?img=12' }}
+            style={styles.profileImg}
+          />
+        </View>
+      </View>
+
+      <View style={styles.divider} />
+
+      {/* TOP SECTION */}
+      <Text style={styles.sectionTitle}>Share & Earn</Text>
+      <Text style={styles.sectionSubtitle}>
+        Pick a deal, share with friends to earn cash per click.
+      </Text>
+
+      {/* Search + Sort */}
+      <View style={styles.rowBetween}>
+        <View style={styles.searchBox}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by category or deals..."
+          />
+        </View>
+
+        {/* SORT DROPDOWN */}
+        <View>
+          <TouchableOpacity
+            style={styles.sortBtn}
+            onPress={() => setSortOpen(!sortOpen)}
+          >
+            <Text style={styles.sortBtnText}>Sort by</Text>
+            <Text style={styles.chevron}>{sortOpen ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+
+          {sortOpen && (
+            <View style={styles.dropdown}>
+              {sortOptions.map(opt => (
+                <TouchableOpacity
+                  key={opt}
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setSelectedSort(opt);
+                    setSortOpen(false);
+                  }}
+                >
+                  <Text style={styles.dropdownText}>{opt}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      </View>
+
+      {/* LIST */}
+      <FlatList
+        data={sampleCampaigns}
+        keyExtractor={item => item.id}
+        renderItem={renderCard}
+        contentContainerStyle={{ paddingBottom: 120, marginTop: s(10) }}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
+  );
+}
+
+// ------------------------- STYLES -------------------------
+
+const createStyles = theme =>
   StyleSheet.create({
-    container: {
+    screen: {
       flex: 1,
+      backgroundColor: '#fff',
+      padding: s(16),
     },
+    divider: {
+      height: 1,
+      backgroundColor: '#E5E7EB',
+      marginVertical: s(12),
+    },
+
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: theme.spacing.md,
-      backgroundColor: theme.colors.background,
+      marginTop: s(15),
     },
-    headerIcons: {
-      flexDirection: 'row',
-      gap: theme.spacing.md,
+    logo: {
+      width: s(120),
+      height: s(45),
+      resizeMode: 'contain',
     },
-    icon: {
-      fontSize: 24,
+    greeting: {
+      fontSize: s(14),
+      marginTop: s(4),
+      color: '#444',
     },
-    tabs: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border,
+    profileBox: {},
+    profileImg: {
+      width: s(40),
+      height: s(40),
+      borderRadius: 20,
     },
-    tab: {
+
+    sectionTitle: {
+      fontSize: s(20),
+      fontWeight: '700',
+      marginBottom: s(4),
+      color: '#111',
+    },
+    sectionSubtitle: {
+      fontSize: s(13),
+      color: '#777',
+      marginBottom: s(20),
+    },
+
+    searchBox: {
       flex: 1,
-      paddingVertical: theme.spacing.md,
+      marginRight: s(10),
+      backgroundColor: '#F2F4F7',
+      borderRadius: 10,
+      paddingHorizontal: s(12),
+      justifyContent: 'center',
+      height: s(45),
+    },
+    searchInput: {
+      fontSize: s(14),
+      color: '#333',
+    },
+
+    sortBtn: {
+      flexDirection: 'row',
       alignItems: 'center',
+      backgroundColor: '#F2F4F7',
+      paddingHorizontal: s(14),
+      height: s(45),
+      borderRadius: 10,
     },
-    activeTab: {
-      borderBottomWidth: 2,
-      borderBottomColor: theme.colors.primary,
+    sortBtnText: {
+      fontSize: s(14),
+      marginRight: s(6),
+      color: '#333',
     },
-    tabText: {
-      fontSize: theme.typography.body.fontSize,
-      color: theme.colors.textSecondary,
+    chevron: {
+      fontSize: s(12),
+      color: '#555',
     },
-    activeTabText: {
-      color: theme.colors.primary,
-      fontWeight: '600',
+
+    dropdown: {
+      marginTop: s(6),
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      elevation: 4,
+      paddingVertical: s(4),
+      width: s(150),
+      borderWidth: 1,
+      borderColor: '#eee',
+      position: 'absolute',
+      right: 0,
+      zIndex: 10,
     },
-    listContent: {
-      padding: theme.spacing.md,
+    dropdownItem: {
+      paddingVertical: s(10),
+      paddingHorizontal: s(12),
     },
-    campaignCard: {
-      backgroundColor: theme.colors.card,
-      borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.md,
-      overflow: 'hidden',
+    dropdownText: {
+      fontSize: s(14),
+      color: '#333',
     },
-    campaignImage: {
-      width: '100%',
-      height: 200,
-    },
-    campaignContent: {
-      padding: theme.spacing.md,
-    },
-    description: {
-      fontSize: theme.typography.body.fontSize,
-      color: theme.colors.textSecondary,
-      marginVertical: theme.spacing.sm,
-    },
-    campaignFooter: {
+
+    rowBetween: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: theme.spacing.md,
+      alignItems: 'center',
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+
+    card: {
+      flexDirection: 'row',
+      backgroundColor: '#fff',
+      borderRadius: 14,
+      marginBottom: s(16),
+      borderWidth: 1,
+      borderColor: '#eee',
+      padding: s(10),
+      alignItems: 'flex-start',
+    },
+    cardImage: {
+      width: s(130),
+      height: s(115),
+      borderRadius: 12,
+      marginRight: s(12),
+    },
+    cardContent: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
+    cardTitle: {
+      fontSize: s(16),
+      fontWeight: '700',
+      color: '#222',
+      marginBottom: s(4),
+    },
+    cardDescription: {
+      fontSize: s(13),
+      color: '#666',
+      marginBottom: s(10),
+    },
+    timerIcon: {
+      fontSize: s(14),
+      marginRight: s(4),
+    },
+    endDate: {
+      fontSize: s(13),
+      color: '#555',
+    },
+    coinIcon: {
+      fontSize: s(16),
+      marginRight: s(4),
     },
     earnText: {
-      fontSize: theme.typography.body.fontSize,
-      color: theme.colors.success,
+      fontSize: s(14),
+      fontWeight: '700',
+      color: '#28A745',
+    },
+
+    shareBtn: {
+      backgroundColor: '#3B7BFF',
+      paddingHorizontal: s(16),
+      paddingVertical: s(8),
+      borderRadius: 8,
+    },
+    shareBtnText: {
+      color: 'white',
       fontWeight: '600',
-    },
-    clicksText: {
-      fontSize: theme.typography.caption.fontSize,
-      color: theme.colors.textSecondary,
-    },
-    shareButton: {
-      width: '100%',
+      fontSize: s(13),
     },
   });
-
-export default HomeScreen;
-
