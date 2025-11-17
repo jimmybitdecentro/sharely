@@ -17,6 +17,7 @@ import { images } from '../../theme/images';
 import { useTheme } from '../../hooks/useTheme';
 import { useLanguage } from '../../hooks/useLanguage';
 import { s } from '../../theme/size';
+import { MainHeader } from '../../components/common/Headers/MainHeader';
 
 const sampleCampaigns = [
   {
@@ -99,19 +100,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.screen}>
       {/* HEADER */}
-      <View style={styles.header}>
-        <View>
-          <Image source={images.logo} style={styles.logo} />
-          <Text style={styles.greeting}>Good morning, Raj!</Text>
-        </View>
-
-        <View style={styles.profileBox}>
-          <Image
-            source={{ uri: 'https://i.pravatar.cc/150?img=12' }}
-            style={styles.profileImg}
-          />
-        </View>
-      </View>
+     <MainHeader />
 
       <View style={styles.divider} />
 

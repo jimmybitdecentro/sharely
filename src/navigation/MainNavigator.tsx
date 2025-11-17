@@ -4,6 +4,8 @@ import { MainTabParamList } from '../types/navigation';
 import HomeStackNavigator from './HomeStackNavigator';
 import ProfileStackNavigator from './ProfileStackNavigator';
 import NotificationsScreen from '../screens/home/NotificationsScreen';
+import Feather from '@react-native-vector-icons/feather';
+import MyLinksScreen from '../screens/links/MyLinksScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -19,19 +21,44 @@ const MainNavigator: React.FC = () => {
       <Tab.Screen
         name="HomeStack"
         component={HomeStackNavigator}
-        options={{ title: 'Earn' }}
+        options={{
+          title: 'Earn',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="zap" size={size} color={color} />
+          ),
+        }}
       />
-      {/* <Tab.Screen name="Search" component={SearchScreen} options={{title: 'Search'}} /> */}
-      {/* <Tab.Screen name="Add" component={AddScreen} options={{title: 'Add'}} /> */}
-      <Tab.Screen
+
+      {/* <Tab.Screen
         name="Notifications"
         component={NotificationsScreen}
-        options={{ title: 'Links' }}
+        options={{
+          title: 'Links',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="link" size={size} color={color} />
+          ),
+        }}
+      /> */}
+      <Tab.Screen
+        name="MyLinksScreen"
+        component={MyLinksScreen}
+        options={{
+          title: 'Links',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="link" size={size} color={color} />
+          ),
+        }}
       />
+
       <Tab.Screen
         name="ProfileStack"
         component={ProfileStackNavigator}
-        options={{ title: 'Wallet' }}
+        options={{
+          title: 'Wallet',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="wallet" size={size} color={color} />
+          ),
+        }}
       />
     </Tab.Navigator>
   );

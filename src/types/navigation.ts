@@ -19,6 +19,7 @@ export type MainTabParamList = {
   Add: undefined;
   Notifications: undefined;
   ProfileStack: NavigatorScreenParams<ProfileStackParamList>;
+  MyLinksScreen:undefined;
 };
 
 export type HomeStackParamList = {
