@@ -1,21 +1,44 @@
 import React from 'react';
-import {View, StyleSheet, ViewStyle, SafeAreaView} from 'react-native';
-import {useTheme} from '../../../hooks/useTheme';
+import { View, StyleSheet, ViewStyle, SafeAreaView, ImageBackground, ImageSourcePropType } from 'react-native';
+import { useTheme } from '../../../hooks/useTheme';
+
+// Import images
+const allBg = require('../../../assets/images/allBg.png');
 
 interface ContainerProps {
   children: React.ReactNode;
   style?: ViewStyle;
   safeArea?: boolean;
+  backgroundImage?: ImageSourcePropType;
 }
 
-const Container: React.FC<ContainerProps> = ({children, style, safeArea = true}) => {
-  const {theme} = useTheme();
+const Container: React.FC<ContainerProps> = ({
+  children,
+  style,
+  safeArea = true,
+  backgroundImage = allBg
+}) => {
+  const { theme } = useTheme();
   const styles = createStyles(theme);
 
-  const content = <View style={[styles.container, style]}>{children}</View>;
+  const content = (
+    <ImageBackground source={backgroundImage} style={styles.backgroundImage} resizeMode="cover">
+      <View style={[styles.container, style]}>
+        {children}
+      </View>
+    </ImageBackground>
+  );
 
   if (safeArea) {
-    return <SafeAreaView style={styles.safeArea}>{content}</SafeAreaView>;
+    return (
+      <ImageBackground source={backgroundImage} style={styles.backgroundImage} resizeMode="cover">
+        <SafeAreaView style={styles.safeArea}>
+          <View style={[styles.container, style]}>
+            {children}
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
+    );
   }
 
   return content;
@@ -23,14 +46,18 @@ const Container: React.FC<ContainerProps> = ({children, style, safeArea = true})
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
+    backgroundImage: {
+      flex: 1,
+      width: '100%',
+      height: '100%',
+    },
     safeArea: {
       flex: 1,
-      backgroundColor: theme.colors.background,
-      padding:16
+      // Removed background color to show image
     },
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      // Removed background color to show image
     },
   });
 
