@@ -1,179 +1,222 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, ScrollView, TouchableOpacity} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {useDispatch} from 'react-redux';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { useDispatch } from 'react-redux';
+import LinearGradient from 'react-native-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 import Container from '../../components/layouts/Container/Container';
-import Button from '../../components/base/Button/Button';
+import FormCard from '../../components/common/FormCard/FormCard';
 import InputField from '../../components/base/InputField/InputField';
-import Label from '../../components/base/Label/Label';
-import {useTheme} from '../../hooks/useTheme';
-import {useLanguage} from '../../hooks/useLanguage';
-import {AuthStackParamList} from '../../types/navigation';
-import {apiService} from '../../services/api/apiService';
-import {setCredentials} from '../../store/slices/authSlice';
-import {storageService} from '../../services/storage/storageService';
-import {validateEmail, validatePassword} from '../../utils/validators';
+import { useTheme } from '../../hooks/useTheme';
+import { useLoginForm } from '../../hooks/useLoginForm';
+import { AuthStackParamList } from '../../types/navigation';
+import { LoginFormData } from '../../validations/loginSchema';
+import { setCredentials } from '../../store/slices/authSlice';
+import { storageService } from '../../services/storage/storageService';
+import { Theme } from '../../types/theme';
+import { s } from '../../theme/size';
 
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
+
+const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const dispatch = useDispatch();
-  const {theme} = useTheme();
-  const {t} = useLanguage();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
   const styles = createStyles(theme);
 
-  const handleDummyLogin = async () => {
-  await storageService.setItem('@sharely:has_seen_onboarding', true);
-  dispatch(setCredentials({token: "dummy-token", user: {name: "Guest"}}));
-};
+  const {
+    formData,
+    isSubmitting,
+    handleInputChange,
+    handleBlur,
+    handleSubmit,
+    getFieldError,
+  } = useLoginForm();
 
-
-  const handleLogin = async () => {
-    const emailErr = validateEmail(email);
-    const passwordErr = validatePassword(password);
-
-    setEmailError(emailErr);
-    setPasswordError(passwordErr);
-
-    if (emailErr || passwordErr) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await apiService.login(email, password);
-      if (response.success && response.data) {
-        const {token, user} = response.data;
-        await storageService.setAuthToken(token);
-        await storageService.setUserData(user);
-        dispatch(setCredentials({token, user}));
-        // Navigation will be handled by AppNavigator based on auth state
-      }
-    } catch (error: any) {
-      // Handle error
-      console.error('Login error:', error);
-    } finally {
-      setLoading(false);
-    }
+  // Handles OTP request after validation
+  const handleSendOtp = async (data: LoginFormData) => {
+    console.log('Send OTP for:', data.email);
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+    
+    // TODO: Call your OTP API here
+    // await apiService.sendOtp(data.email);
+    
+    // For demo - set credentials and navigate
+    await storageService.setItem('@sharely:has_seen_onboarding', true);
+    dispatch(setCredentials({ token: 'dummy-token', user: { id: '1', name: 'Guest', email: data.email } }));
   };
 
+  const onFormSubmit = () => {
+    handleSubmit(handleSendOtp);
+  };
+
+  // Gradient text component for "Sharely" logo
+  const GradientText = ({ text, style }: { text: string; style?: any }) => (
+    <MaskedView maskElement={<Text style={[styles.logoText, style]}>{text}</Text>}>
+      <LinearGradient
+        colors={GRADIENT_COLORS}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}>
+        <Text style={[styles.logoText, style, { opacity: 0 }]}>{text}</Text>
+      </LinearGradient>
+    </MaskedView>
+  );
+
+  // Terms and signup footer component
+  const TermsFooter = () => (
+    <View style={styles.footerContainer}>
+      <View style={styles.termsContainer}>
+        <Text style={styles.termsText}>By Continuing, You Agree To Our</Text>
+        <TouchableOpacity onPress={() => console.log('Terms pressed')}>
+          <Text style={styles.termsLink}>Terms & Conditions</Text>
+        </TouchableOpacity>
+      </View>
+      
+      <View style={styles.signupContainer}>
+        <Text style={styles.signupText}>Don't have an account? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+          <Text style={styles.signupLink}>Sign Up</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  // Label with optional tag
+  const FieldLabel = ({ label, optional }: { label: string; optional?: boolean }) => (
+    <View style={styles.labelContainer}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      {optional && <Text style={styles.optionalTag}>(Optional)</Text>}
+    </View>
+  );
+
   return (
-    <Container>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.content}>
-          <Label
-            text="Sharely"
-            variant="heading"
-            style={styles.logo}
-            useTranslation={false}
-          />
-          <Label
-            text={t('welcome')}
-            variant="heading"
-            style={styles.title}
-            useTranslation={true}
-          />
-          <InputField
-            label={t('email')}
-            placeholder={t('email')}
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setEmailError(null);
-            }}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={emailError || undefined}
-          />
-          <InputField
-            label={t('password')}
-            placeholder={t('password')}
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setPasswordError(null);
-            }}
-            secureTextEntry
-            error={passwordError || undefined}
-          />
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ForgotPassword')}
-            style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>{t('forgotPassword')}</Text>
-          </TouchableOpacity>
-          <Button
-            title={t('login')}
-            onPress={handleDummyLogin}
-            variant="primary"
-            loading={loading}
-            style={styles.button}
-          />
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>{t('dontHaveAccount')}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-              <Text style={styles.signupLink}> {t('signup')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
+    <Container style={styles.container}>
+      {/* Header with gradient logo */}
+      <View style={styles.header}>
+        <GradientText text="Sharely" />
+      </View>
+
+      {/* Center wrapper for FormCard */}
+      <View style={styles.centerWrapper}>
+        <FormCard
+          title="Welcome Back!"
+          subtitle="Sign in to start earning money"
+          position="center"
+          buttonText="SEND OTP"
+          onSubmit={onFormSubmit}
+          isSubmitting={isSubmitting}
+          footerComponent={<TermsFooter />}
+          renderContent={() => (
+            <>
+              {/* Email Field */}
+              <View style={styles.fieldGroup}>
+                <FieldLabel label="Email" />
+                <InputField
+                  placeholder="Enter your Email"
+                  value={formData.email}
+                  onChangeText={(text) => handleInputChange('email', text)}
+                  onBlur={() => handleBlur('email')}
+                  error={getFieldError('email')}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              {/* Referral Field */}
+              <View style={styles.fieldGroup}>
+                <FieldLabel label="Referral" optional />
+                <InputField
+                  placeholder="Enter Referral"
+                  value={formData.referral}
+                  onChangeText={(text) => handleInputChange('referral', text)}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+            </>
+          )}
+        />
+      </View>
     </Container>
   );
 };
 
-const createStyles = (theme: any) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
-      flexGrow: 1,
+      padding: s(19),
+    },
+    header: {
+      paddingTop: theme.spacing.xl,
+      paddingBottom: theme.spacing.lg,
+    },
+    centerWrapper: {
+      flex: 1,
       justifyContent: 'center',
-      padding: theme.spacing.lg,
+      alignItems: 'center',
     },
-    content: {
-      width: '100%',
+    logoText: {
+      fontSize: s(28),
+      fontFamily: theme.fonts.bold,
+      fontWeight: 'bold',
     },
-    logo: {
-      textAlign: 'center',
-      marginBottom: theme.spacing.xl,
-      fontSize: 32,
-      fontWeight: '700',
+    fieldGroup: {
+      marginBottom: theme.spacing.sm,
     },
-    title: {
-      textAlign: 'center',
-      marginBottom: theme.spacing.xl,
+    labelContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: theme.spacing.xs,
     },
-    forgotPassword: {
-      alignSelf: 'flex-end',
-      marginBottom: theme.spacing.lg,
+    fieldLabel: {
+      fontSize: s(14),
+      fontFamily: theme.fonts.regular,
+      color: theme.colors.text,
     },
-    forgotPasswordText: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.body.fontSize,
+    optionalTag: {
+      fontSize: s(14),
+      fontFamily: theme.fonts.regular,
+      color: '#23C28C',
+      marginLeft: theme.spacing.xs,
     },
-    button: {
-      width: '100%',
+    footerContainer: {
+      marginTop: theme.spacing.lg,
+    },
+    termsContainer: {
+      alignItems: 'center',
       marginBottom: theme.spacing.md,
+    },
+    termsText: {
+      fontSize: s(13),
+      fontFamily: theme.fonts.regular,
+      color: theme.colors.textSecondary,
+    },
+    termsLink: {
+      fontSize: s(13),
+      fontFamily: theme.fonts.medium,
+      color: '#1A88B3',
+      marginTop: theme.spacing.xs,
     },
     signupContainer: {
       flexDirection: 'row',
       justifyContent: 'center',
-      marginTop: theme.spacing.md,
+      alignItems: 'center',
+      marginBottom: theme.spacing.sm,
     },
     signupText: {
+      fontSize: s(14),
+      fontFamily: theme.fonts.regular,
       color: theme.colors.textSecondary,
-      fontSize: theme.typography.body.fontSize,
     },
     signupLink: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.body.fontSize,
-      fontWeight: '600',
+      fontSize: s(14),
+      fontFamily: theme.fonts.semiBold,
+      color: '#23C28C',
     },
   });
 
 export default LoginScreen;
-

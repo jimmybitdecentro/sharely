@@ -1,7 +1,8 @@
 import React from 'react';
-import {Text, StyleSheet, TextStyle} from 'react-native';
-import {useTheme} from '../../../hooks/useTheme';
-import {useLanguage} from '../../../hooks/useLanguage';
+import { Text, StyleSheet, TextStyle } from 'react-native';
+import { useTheme } from '../../../hooks/useTheme';
+import { useLanguage } from '../../../hooks/useLanguage';
+import { s } from '../../../theme/size';
 
 interface LabelProps {
   text: string;
@@ -16,8 +17,8 @@ const Label: React.FC<LabelProps> = ({
   style,
   useTranslation = true,
 }) => {
-  const {theme} = useTheme();
-  const {t} = useLanguage();
+  const { theme } = useTheme();
+  const { t } = useLanguage();
   const styles = createStyles(theme, variant);
 
   const displayText = useTranslation ? t(text) : text;
@@ -30,20 +31,19 @@ const createStyles = (theme: any, variant: 'default' | 'heading' | 'subtitle') =
     label: {
       fontSize:
         variant === 'heading'
-          ? theme.typography.h2.fontSize
+          ? s(24)
           : variant === 'subtitle'
-          ? theme.typography.h3.fontSize
-          : theme.typography.body.fontSize,
-      fontWeight:
+          ? s(20)
+          : s(14),
+      fontFamily:
         variant === 'heading'
-          ? theme.typography.h2.fontWeight
+          ? theme.fonts.bold
           : variant === 'subtitle'
-          ? theme.typography.h3.fontWeight
-          : theme.typography.body.fontWeight,
+          ? theme.fonts.semiBold
+          : theme.fonts.regular,
       color: theme.colors.text,
-      marginBottom: variant === 'heading' ? theme.spacing.md : theme.spacing.xs,
+      marginBottom: variant === 'heading' ? s(12) : s(4),
     },
   });
 
 export default Label;
-
