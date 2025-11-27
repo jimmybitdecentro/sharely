@@ -46,7 +46,7 @@ const AppNavigator: React.FC = () => {
         }}>
         {!isAuthenticated ? (
           hasSeenOnboarding ? (
-            <Stack.Screen name="Auth" component={AuthNavigator} />
+            <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
           ) : (
             <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
           )
