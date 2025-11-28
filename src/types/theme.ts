@@ -17,9 +17,9 @@ export interface Colors {
 }
 
 export interface TypographyStyle {
-  fontSize: number;
-  fontWeight: string;
-  lineHeight: number;
+    fontSize: number;
+    fontWeight: string;
+    lineHeight: number;
   fontFamily: string;
 }
 

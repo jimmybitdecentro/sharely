@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch } from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import Container from '../../components/layouts/Container/Container';
@@ -12,8 +11,6 @@ import { useTheme } from '../../hooks/useTheme';
 import { useLoginForm } from '../../hooks/useLoginForm';
 import { AuthStackParamList } from '../../types/navigation';
 import { LoginFormData } from '../../validations/loginSchema';
-import { setCredentials } from '../../store/slices/authSlice';
-import { storageService } from '../../services/storage/storageService';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
 
@@ -23,7 +20,6 @@ const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const dispatch = useDispatch();
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
@@ -36,17 +32,19 @@ const LoginScreen: React.FC = () => {
     getFieldError,
   } = useLoginForm();
 
-  // Handles OTP request after validation
+  // Handles OTP request after validation - navigates to OTP screen
   const handleSendOtp = async (data: LoginFormData) => {
     console.log('Send OTP for:', data.email);
     await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
     
-    // TODO: Call your OTP API here
+    // TODO: Call your send OTP API here
     // await apiService.sendOtp(data.email);
     
-    // For demo - set credentials and navigate
-    await storageService.setItem('@sharely:has_seen_onboarding', true);
-    dispatch(setCredentials({ token: 'dummy-token', user: { id: '1', name: 'Guest', email: data.email } }));
+    // Navigate to OTP verification screen
+    navigation.navigate('OtpVerification', { 
+      email: data.email, 
+      referral: data.referral || undefined 
+    });
   };
 
   const onFormSubmit = () => {

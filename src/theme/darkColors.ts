@@ -15,5 +15,7 @@ export const darkColors: Colors = {
   placeholder: '#666666',
   disabled: '#2A2A2A',
   card: '#1E1E1E',
+  inputBg:"#EAEAEA",
+
 };
 
