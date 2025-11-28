@@ -1,50 +1,99 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import Container from '../../components/layouts/Container/Container';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ImageBackground,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { useTheme } from '../../hooks/useTheme';
 import Button from '../../components/base/Button/Button';
-import Label from '../../components/base/Label/Label';
-import {useTheme} from '../../hooks/useTheme';
-import {useLanguage} from '../../hooks/useLanguage';
-import {storageService} from '../../services/storage/storageService';
+import Container from '../../components/layouts/Container/Container';
+import { images } from '../../theme/images';
+import { storageService } from '../../services/storage/storageService';
 
 type OnboardingScreen3NavigationProp = StackNavigationProp<any, 'Onboarding3'>;
 
 const OnboardingScreen3: React.FC = () => {
   const navigation = useNavigation<OnboardingScreen3NavigationProp>();
-  const {theme} = useTheme();
-  const {t} = useLanguage();
+  const { theme } = useTheme();
   const styles = createStyles(theme);
 
   const handleGetStarted = async () => {
     // Mark onboarding as seen
     await storageService.setItem('@sharely:has_seen_onboarding', true);
     // Navigate to auth/login
-    navigation.navigate('Auth', {screen: 'Login'});
+    navigation.navigate('Auth', { screen: 'Login' });
+  };
+
+  const handleLogin = () => {
+    // Navigate to Auth stack - adjust based on your navigation structure
+    // @ts-ignore - navigating to root Auth stack
+    navigation.getParent()?.navigate('Auth', { screen: 'Login' });
   };
 
   return (
-    <Container>
-      <View style={styles.container}>
-        <View style={styles.illustrationContainer}>
-          <View style={styles.illustration} />
-        </View>
-        <View style={styles.contentContainer}>
-          <Label
-            text={t('withdrawAnytime')}
-            variant="heading"
-            style={styles.title}
-            useTranslation={true}
+    <Container >
+      {/* App Title with Gradient */}
+      <Image
+          source={images.logo}
+          style={{
+            width: 100,
+            height: 40,
+            paddingStart: theme.spacing.lg,
+            resizeMode: 'contain',
+          }}
+        />
+      <View style={[ {flexDirection: 'row',
+      flex: 1,
+        
+       }]}>
+       
+        <Image
+          source={images.onboarding3}
+          style={[
+            styles.illustration,
+            { width: '25%', 
+              resizeMode: 'contain' },
+          ]}
+        />
+        <Image
+          source={images.onboarding33}
+          style={[
+            styles.illustration,
+            { width: '65%', 
+              resizeMode: 'contain' },
+          ]}
+        />
+      </View>
+
+      {/* White Card Container */}
+      <View style={styles.cardContainer}>
+        <ImageBackground
+        resizeMode='stretch'
+          source={images.white_transparent_bg}
+          style={{
+            flex: 1,
+            padding: theme.spacing.lg,
+          }}
+        >
+          <Text style={styles.cardTitle}>
+          Withdraw your funds anytime
+          </Text>
+          <Text style={styles.cardDescription}>
+          Redeem your earnings instantly via UPI straight to your bank account
+          </Text>
+
+          {/* GET STARTED Button with Gradient */}
+          <Button title="GET STARTED" onPress={handleGetStarted} variant="primary"
+            style={{ marginBottom: theme.spacing.md }}
           />
-          <Text style={styles.description}>{t('withdrawAnytimeDesc')}</Text>
-          <Button
-            title={t('getStarted')}
-            onPress={handleGetStarted}
-            variant="primary"
-            style={styles.button}
-          />
-        </View>
+
+          <Button title="LOGIN" onPress={handleLogin} variant="secondary" />
+
+        </ImageBackground>
       </View>
     </Container>
   );
@@ -54,41 +103,100 @@ const createStyles = (theme: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      backgroundColor: '#1a1a1a', // Dark background
+    },
+    safeArea: {
+      flex: 1,
+    },
+    titleContainer: {
+      paddingTop: theme.spacing.md,
       paddingHorizontal: theme.spacing.lg,
+      paddingBottom: theme.spacing.sm,
+    },
+    appTitle: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      fontFamily: theme.typography.h1.fontFamily || 'System',
     },
     illustrationContainer: {
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       alignItems: 'center',
-      width: '100%',
+      paddingTop: theme.spacing.xl,
+      paddingBottom: 200, // Space for the card to overlap
     },
     illustration: {
-      width: 200,
-      height: 200,
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.lg,
+      width: '80%',
+      height: '100%',
+      maxWidth: 300,
+      maxHeight: 400,
     },
-    contentContainer: {
-      flex: 0.5,
-      width: '100%',
-      alignItems: 'center',
+    cardContainer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      paddingHorizontal: theme.spacing.lg,
+      paddingBottom: theme.spacing.xl,
+      paddingTop: theme.spacing.md,
     },
-    title: {
+    card: {
+      borderRadius: 10,
+      padding: theme.spacing.xl,
+      shadowColor: '#000',
+
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 5,
+    },
+    cardTitle: {
+      fontSize: theme.typography.h2.fontSize,
+      fontWeight: 'bold',
+      color: '#000000',
       marginBottom: theme.spacing.md,
-      textAlign: 'center',
+      textAlign: 'left',
     },
-    description: {
+    cardDescription: {
       fontSize: theme.typography.body.fontSize,
-      color: theme.colors.textSecondary,
-      textAlign: 'center',
+      color: '#000000',
+      lineHeight: theme.typography.body.fontSize * 1.5,
       marginBottom: theme.spacing.xl,
-      paddingHorizontal: theme.spacing.md,
+      textAlign: 'left',
     },
-    button: {
-      width: '100%',
-      marginTop: theme.spacing.lg,
+    nextButton: {
+      borderRadius: theme.borderRadius.md,
+      overflow: 'hidden',
+      marginBottom: theme.spacing.md,
+    },
+    gradientButton: {
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 48,
+    },
+    nextButtonText: {
+      color: '#FFFFFF',
+      fontSize: theme.typography.body.fontSize,
+      fontWeight: '600',
+      letterSpacing: 1,
+    },
+    loginButton: {
+      backgroundColor: '#000000',
+      borderRadius: theme.borderRadius.md,
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 48,
+      borderWidth: 1,
+      borderColor: '#FFFFFF',
+    },
+    loginButtonText: {
+      color: '#FFFFFF',
+      fontSize: theme.typography.body.fontSize,
+      fontWeight: '600',
+      letterSpacing: 1,
     },
   });
 

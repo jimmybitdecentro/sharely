@@ -6,19 +6,22 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
+  ImageBackground,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientText from '../../components/base/GradientText/GradientText';
-import {useTheme} from '../../hooks/useTheme';
+import { useTheme } from '../../hooks/useTheme';
 import Button from '../../components/base/Button/Button';
+import Container from '../../components/layouts/Container/Container';
+import { images } from '../../theme/images';
 
 type OnboardingScreen1NavigationProp = StackNavigationProp<any, 'Onboarding1'>;
 
 const OnboardingScreen1: React.FC = () => {
   const navigation = useNavigation<OnboardingScreen1NavigationProp>();
-  const {theme} = useTheme();
+  const { theme } = useTheme();
   const styles = createStyles(theme);
 
   const handleNext = () => {
@@ -28,57 +31,61 @@ const OnboardingScreen1: React.FC = () => {
   const handleLogin = () => {
     // Navigate to Auth stack - adjust based on your navigation structure
     // @ts-ignore - navigating to root Auth stack
-    navigation.getParent()?.navigate('Auth', {screen: 'Login'});
+    navigation.getParent()?.navigate('Auth', { screen: 'Login' });
   };
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        {/* App Title with Gradient */}
-        <View style={styles.titleContainer}>
-          <GradientText
-            text="Sharely"
-            style={styles.appTitle}
-            colors={['#2C73D2', '#1A88B3', '#23C28C']}
-            start={{x: 0, y: 0}}
-            end={{x: 1, y: 0}}
+    <Container >
+      {/* App Title with Gradient */}
+      <Image
+          source={images.logo}
+          style={{
+            width: 100,
+            height: 40,
+            paddingStart: theme.spacing.lg,
+            resizeMode: 'contain',
+          }}
+        />
+      <View style={[ {alignItems: 'center',  marginBottom: theme.spacing.xl }]}>
+       
+        <Image
+          source={images.onboarding1}
+          style={[
+            styles.illustration,
+            { width: '90%', 
+              resizeMode: 'contain' },
+          ]}
+        />
+      </View>
+
+      {/* White Card Container */}
+      <View style={styles.cardContainer}>
+        <ImageBackground
+        resizeMode='stretch'
+          source={images.white_transparent_bg}
+          style={{
+            flex: 1,
+            padding: theme.spacing.lg,
+          }}
+        >
+          <Text style={styles.cardTitle}>
+            Share All Your Campaign Links
+          </Text>
+          <Text style={styles.cardDescription}>
+            Pick advertiser campaign links inside Sharely and share with your
+            friends in one tap
+          </Text>
+
+          {/* NEXT Button with Gradient */}
+          <Button title="NEXT" onPress={handleNext} variant="primary"
+            style={{ marginBottom: theme.spacing.md }}
           />
-        </View>
 
-        {/* Illustration Container */}
-        <View style={styles.illustrationContainer}>
-          <Image
-            source={{
-              uri: 'https://via.placeholder.com/300x400/1a1a1a/ffffff?text=Illustration',
-            }}
-            style={styles.illustration}
-            resizeMode="contain"
-          />
-        </View>
+          <Button title="LOGIN" onPress={handleLogin} variant="secondary" />
 
-        {/* White Card Container */}
-        <View style={styles.cardContainer}>
-          <LinearGradient colors={['#2C73D2', '#000']} 
-          style={styles.card}>
-            <Text style={styles.cardTitle}>
-              Share All Your Campaign Links
-            </Text>
-            <Text style={styles.cardDescription}>
-              Pick advertiser campaign links inside Sharely and share with your
-              friends in one tap
-            </Text>
-
-            {/* NEXT Button with Gradient */}
-           <Button title="NEXT" onPress={handleNext} variant="primary"
-           style={{marginBottom: theme.spacing.md}}
-           />
-
-           <Button title="LOGIN" onPress={handleLogin} variant="secondary" />
-            
-          </LinearGradient>
-        </View>
-      </SafeAreaView>
-    </View>
+        </ImageBackground>
+      </View>
+    </Container>
   );
 };
 
@@ -127,7 +134,7 @@ const createStyles = (theme: any) =>
       borderRadius: 10,
       padding: theme.spacing.xl,
       shadowColor: '#000',
-     
+
       shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 5,
