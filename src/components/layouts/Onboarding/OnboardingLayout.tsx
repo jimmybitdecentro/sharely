@@ -97,8 +97,6 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
           source={images.white_transparent_bg}
           style={{
             flex: 1,
-
-
             padding: theme.spacing.lg,
           }}
         >
@@ -113,8 +111,8 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
                 style={{ marginBottom: theme.spacing.md }}
               />
             </View>
-            <View >
-              <Button title={primaryButtonTitle} onPress={primaryButtonOnPress} variant="primary"
+            <View  >
+              <Button title={primaryButtonTitle} onPress={primaryButtonOnPress} variant="secondary"
                 style={{ marginBottom: theme.spacing.md }}
               />
 

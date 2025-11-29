@@ -7,7 +7,9 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import {useTheme} from '../../../hooks/useTheme';
+import LinearGradient from 'react-native-linear-gradient';
+import { useTheme } from '../../../hooks/useTheme';
+import { s } from '../../../theme/size';
 
 interface ButtonProps {
   title: string;
@@ -19,6 +21,9 @@ interface ButtonProps {
   textStyle?: TextStyle;
 }
 
+// Gradient colors for primary button
+const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
+
 const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
@@ -28,10 +33,40 @@ const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
 }) => {
-  const {theme} = useTheme();
+  const { theme } = useTheme();
   const isDisabled = disabled || loading;
-
   const styles = createStyles(theme, variant);
+
+  const renderContent = () => (
+    loading ? (
+      <ActivityIndicator
+        size="small"
+        color={variant === 'primary' ? '#FFFFFF' : theme.colors.primary}
+      />
+    ) : (
+      <Text style={[styles.text, textStyle]}>{title}</Text>
+    )
+  );
+
+  if (variant === 'primary') {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={isDisabled}
+        activeOpacity={0.8}
+        style={[isDisabled && styles.disabled,
+          
+         style]}>
+        <LinearGradient
+          colors={GRADIENT_COLORS}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradient}>
+          {renderContent()}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -39,40 +74,40 @@ const Button: React.FC<ButtonProps> = ({
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.7}>
-      {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={variant === 'primary' ? theme.colors.background : theme.colors.primary}
-        />
-      ) : (
-        <Text style={[styles.text, textStyle]}>{title}</Text>
-      )}
+      {renderContent()}
     </TouchableOpacity>
   );
 };
 
 const createStyles = (theme: any, variant: 'primary' | 'secondary') =>
   StyleSheet.create({
-    button: {
-      backgroundColor: variant === 'primary' ? theme.colors.primary : theme.colors.surface,
-      paddingVertical: theme.spacing.md,
-      paddingHorizontal: theme.spacing.lg,
-      borderRadius: theme.borderRadius.md,
+    gradient: {
+      paddingVertical: s(14),
+      paddingHorizontal: s(20),
+      borderRadius: s(25),
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: 48,
-      borderWidth: variant === 'secondary' ? 1 : 0,
-      borderColor: variant === 'secondary' ? theme.colors.border : 'transparent',
+      minHeight: s(50),
+    },
+    button: {
+      backgroundColor: theme.colors.surface,
+      paddingVertical: s(14),
+      paddingHorizontal: s(20),
+      borderRadius: s(25),
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: s(50),
+      borderWidth: s(1),
+      borderColor: theme.colors.border,
     },
     disabled: {
       opacity: 0.5,
     },
     text: {
-      color: variant === 'primary' ? theme.colors.background : theme.colors.text,
-      fontSize: theme.typography.body.fontSize,
-      fontWeight: theme.typography.body.fontWeight,
+      color: variant === 'primary' ? '#FFFFFF' : theme.colors.text,
+      fontSize: s(16),
+      fontFamily: theme.fonts.semiBold,
     },
   });
 
 export default Button;
-

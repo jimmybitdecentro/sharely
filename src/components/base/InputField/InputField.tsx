@@ -1,7 +1,8 @@
 import React from 'react';
-import {View, TextInput, Text, StyleSheet, TextInputProps, ViewStyle} from 'react-native';
-import {useTheme} from '../../../hooks/useTheme';
+import { View, TextInput, Text, StyleSheet, TextInputProps, ViewStyle } from 'react-native';
+import { useTheme } from '../../../hooks/useTheme';
 import Label from '../Label/Label';
+import { s } from '../../../theme/size';
 
 interface InputFieldProps extends TextInputProps {
   label?: string;
@@ -16,7 +17,7 @@ const InputField: React.FC<InputFieldProps> = ({
   style,
   ...textInputProps
 }) => {
-  const {theme} = useTheme();
+  const { theme } = useTheme();
   const styles = createStyles(theme, !!error);
 
   return (
@@ -35,25 +36,26 @@ const InputField: React.FC<InputFieldProps> = ({
 const createStyles = (theme: any, hasError: boolean) =>
   StyleSheet.create({
     container: {
-      marginBottom: theme.spacing.md,
+      marginBottom: s(12),
     },
     input: {
-      borderWidth: 1,
+      borderWidth: s(1),
       borderColor: hasError ? theme.colors.error : theme.colors.border,
-      borderRadius: theme.borderRadius.md,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm,
-      fontSize: theme.typography.body.fontSize,
+      borderRadius: s(30),
+      paddingHorizontal: s(16),
+      paddingVertical: s(12),
+      fontSize: s(16),
+      fontFamily: theme.fonts.regular,
       color: theme.colors.text,
-      backgroundColor: theme.colors.background,
-      minHeight: 48,
+      backgroundColor: theme.colors.inputBg,
+      minHeight: s(48),
     },
     errorText: {
       color: theme.colors.error,
-      fontSize: theme.typography.caption.fontSize,
-      marginTop: theme.spacing.xs,
+      fontSize: s(12),
+      fontFamily: theme.fonts.regular,
+      marginTop: s(4),
     },
   });
 
 export default InputField;
-

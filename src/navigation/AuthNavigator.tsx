@@ -5,6 +5,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import LoginSocialScreen from '../screens/auth/LoginSocialScreen';
 import SignupScreen from '../screens/auth/SignupScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import OtpVerificationScreen from '../screens/auth/OtpVerificationScreen';
 
 const Stack = createStackNavigator<AuthStackParamList>();
 
@@ -19,6 +20,7 @@ const AuthNavigator: React.FC = () => {
       <Stack.Screen name="LoginSocial" component={LoginSocialScreen} />
       <Stack.Screen name="Signup" component={SignupScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <Stack.Screen name="OtpVerification" component={OtpVerificationScreen} />
     </Stack.Navigator>
   );
 };

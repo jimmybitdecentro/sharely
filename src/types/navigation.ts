@@ -11,6 +11,7 @@ export type AuthStackParamList = {
   LoginSocial: undefined;
   Signup: undefined;
   ForgotPassword: undefined;
+  OtpVerification: { email: string; referral?: string };
 };
 
 export type MainTabParamList = {

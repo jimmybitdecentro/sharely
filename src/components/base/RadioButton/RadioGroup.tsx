@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../../hooks/useTheme';
+import { s } from '../../../theme/size';
 
 interface RadioOption {
     label: string;
@@ -13,6 +14,7 @@ interface RadioGroupProps {
     onChange: (value: string) => void;
     label?: string;
     style?: any;
+  error?: string;
 }
 
 const RadioGroup: React.FC<RadioGroupProps> = ({
@@ -21,6 +23,7 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
     onChange,
     label,
     style,
+  error,
 }) => {
     const { theme } = useTheme();
     const styles = createStyles(theme);
@@ -34,10 +37,7 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
                     return (
                         <TouchableOpacity
                             key={option.value}
-                            style={[
-                                styles.option,
-                                isSelected && styles.optionSelected,
-                            ]}
+              style={[styles.option, isSelected && styles.optionSelected]}
                             onPress={() => onChange(option.value)}
                             activeOpacity={0.8}>
                             <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
@@ -48,6 +48,7 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
                     );
                 })}
             </View>
+      {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
     );
 };
@@ -55,12 +56,13 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
 const createStyles = (theme: any) =>
     StyleSheet.create({
         container: {
-            marginBottom: theme.spacing.md,
+      marginBottom: s(12),
         },
         label: {
-            marginBottom: theme.spacing.sm,
+      marginBottom: s(8),
             color: theme.colors.text,
-            fontSize: 14,
+      fontSize: s(14),
+      fontFamily: theme.fonts.regular,
         },
         optionsContainer: {
             flexDirection: 'row',
@@ -69,38 +71,44 @@ const createStyles = (theme: any) =>
         option: {
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: '#F0F0F0', // Light gray background
-            borderRadius: 25, // Pill shape
-            paddingVertical: theme.spacing.sm,
-            paddingHorizontal: theme.spacing.lg,
-            flex: 0.48, // Almost half width
+      backgroundColor: theme.colors.inputBg,
+      borderRadius: s(25),
+      paddingVertical: s(10),
+      paddingHorizontal: s(16),
+      flex: 0.48,
+      height: s(48),
         },
-        optionSelected: {
-            // Optional: change background if selected, design shows same background
-        },
+    optionSelected: {},
         radioCircle: {
-            height: 20,
-            width: 20,
-            borderRadius: 10,
-            borderWidth: 2,
+      height: s(18),
+      width: s(18),
+      borderRadius: s(9),
+      borderWidth: s(2),
             borderColor: theme.colors.textSecondary,
             alignItems: 'center',
             justifyContent: 'center',
-            marginRight: theme.spacing.sm,
+      marginRight: s(8),
         },
         radioCircleSelected: {
             borderColor: theme.colors.primary,
         },
         selectedDot: {
-            height: 10,
-            width: 10,
-            borderRadius: 5,
+      height: s(10),
+      width: s(10),
+      borderRadius: s(5),
             backgroundColor: theme.colors.primary,
         },
         optionLabel: {
-            fontSize: 16,
+      fontSize: s(16),
+      fontFamily: theme.fonts.regular,
             color: theme.colors.text,
         },
+    errorText: {
+      color: theme.colors.error,
+      fontSize: s(12),
+      fontFamily: theme.fonts.regular,
+      marginTop: s(4),
+    },
     });
 
 export default RadioGroup;

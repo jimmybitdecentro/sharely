@@ -5,7 +5,7 @@ export const lightColors: Colors = {
   secondary: '#6C757D',
   background: '#FFFFFF',
   surface: '#F8F9FA',
-  text: '#212529',
+  text: '#171B1E',
   textSecondary: '#6C757D',
   border: '#DEE2E6',
   error: '#DC3545',
@@ -15,5 +15,7 @@ export const lightColors: Colors = {
   placeholder: '#ADB5BD',
   disabled: '#E9ECEF',
   card: '#FFFFFF',
+  inputBg:"#EAEAEA",
+
 };
 
