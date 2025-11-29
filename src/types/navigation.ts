@@ -25,6 +25,8 @@ export type MainTabParamList = {
 export type HomeStackParamList = {
   Home: undefined;
   ProductDetail: {productId: string};
+  Notifications: undefined;
+  HelpSupport: undefined;
 };
 
 export type ProfileStackParamList = {
@@ -34,7 +36,7 @@ export type ProfileStackParamList = {
   MyOrders: undefined;
   Settings: undefined;
   EditProfile: undefined;
-  NotificationSettings: undefined;
+  Notifications: undefined;
   HelpSupport: undefined;
 };
 

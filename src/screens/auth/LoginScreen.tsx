@@ -13,6 +13,7 @@ import { AuthStackParamList } from '../../types/navigation';
 import { LoginFormData } from '../../validations/loginSchema';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
+import IVLogo from '../../components/base/ImageView/IVLogo';
 
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -92,12 +93,7 @@ const LoginScreen: React.FC = () => {
 
   return (
     <Container style={styles.container}>
-      {/* Header with gradient logo */}
-      <View style={styles.header}>
-        <GradientText text="Sharely" />
-      </View>
-
-      {/* Center wrapper for FormCard */}
+      <IVLogo /> 
       <View style={styles.centerWrapper}>
         <FormCard
           title="Welcome Back!"

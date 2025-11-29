@@ -6,6 +6,7 @@ import {
   ImageSourcePropType,
   ImageBackground,
   Text,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../../../hooks/useTheme';
 import Button from '../../base/Button/Button';
@@ -14,6 +15,8 @@ import Container from '../Container/Container';
 import { images } from '../../../theme/images';
 import TextCustom from '../../base/Label/TextCustom';
 import Button2 from '../../base/Button/Button2';
+import { s } from '../../../theme/size';
+import IVLogo from '../../base/ImageView/IVLogo';
 
 interface OnboardingLayoutProps {
   illustrations: ImageSourcePropType | ImageSourcePropType[];
@@ -48,15 +51,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   return (
     <Container >
       {/* App Title with Gradient */}
-      <Image
-        source={images.logo}
-        style={{
-          width: 100,
-          height: 40,
-          paddingStart: theme.spacing.lg,
-          resizeMode: 'contain',
-        }}
-      />
+     <IVLogo  mt={s(40)}/>
       <View style={[{
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -105,7 +100,8 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
           <View style={{ flex: 1, justifyContent: 'space-between' }}>
             <View style={{ flexDirection: 'column', justifyContent: 'space-between',
              }}>
-              <TextCustom text={title} fontFamily="bold"
+              <TextCustom text={title} 
+              fontFamily="bold"
               size={32}
               mb={theme.spacing.md}
               />
@@ -115,7 +111,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
               />
             </View>
             <View  >
-              <Button title={primaryButtonTitle} onPress={primaryButtonOnPress} variant="secondary"
+              <Button title={primaryButtonTitle} onPress={primaryButtonOnPress} 
                 style={{ marginBottom: theme.spacing.md }}
               />
 

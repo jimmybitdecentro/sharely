@@ -119,11 +119,12 @@ const MainNavigator: React.FC = () => {
         component={MyLinksScreen}
         options={{ title: 'Links' }}
       />
-      <Tab.Screen
-        name="ProfileStack"
-        component={ProfileStackNavigator}
-        options={{ title: 'Wallet' }}
-      />
+        <Tab.Screen
+          name="ProfileStack"
+          component={ProfileStackNavigator}
+          options={{ title: 'Wallet' }}
+        />
+        
     </Tab.Navigator>
   );
 };

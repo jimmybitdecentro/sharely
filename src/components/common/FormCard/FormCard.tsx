@@ -88,7 +88,6 @@ const FormCard: React.FC<FormCardProps> = ({
 
           <Label
             text={title}
-            variant="heading"
             style={styles.title}
             useTranslation={useTranslation}
           />

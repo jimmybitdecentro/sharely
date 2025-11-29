@@ -7,20 +7,22 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
-import MaskedView from '@react-native-masked-view/masked-view';
 import Container from '../../components/layouts/Container/Container';
+import Label from '../../components/base/Label/Label';
+import { BottomSheet } from '../../components/common/BottomSheet';
 import { HomeStackParamList } from '../../types/navigation';
 import { useTheme } from '../../hooks/useTheme';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
+import { images } from '../../theme/images';
 
 const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
 
-// Sample deals data
 const sampleDeals = [
   {
     id: '1',
@@ -52,68 +54,83 @@ const sampleDeals = [
   },
 ];
 
+const FILTER_OPTIONS = [
+  { id: 'latest', label: 'Latest' },
+  { id: 'priceLowToHigh', label: 'Price : Low to High' },
+  { id: 'priceHighToLow', label: 'Price : High to Low' },
+  { id: 'priceLowHigh', label: 'Price: low to high' },
+  { id: 'popularity', label: 'Popularity' },
+  { id: 'dateCreated', label: 'Date Created' },
+];
+
+type DealItem = typeof sampleDeals[0];
+
 export default function HomeScreen() {
   const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
   const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState('latest');
   const styles = createStyles(theme);
 
-  // Gradient text for logo
-  const GradientText = ({ text, style }: { text: string; style?: any }) => (
-    <MaskedView maskElement={<Text style={[styles.logoText, style]}>{text}</Text>}>
-      <LinearGradient
-        colors={GRADIENT_COLORS}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}>
-        <Text style={[styles.logoText, style, { opacity: 0 }]}>{text}</Text>
-      </LinearGradient>
-    </MaskedView>
+  const handleApplyFilter = () => {
+    console.log('Applied filter:', selectedFilter);
+    setFilterVisible(false);
+  };
+
+  const handleClearFilter = () => {
+    setSelectedFilter('latest');
+  };
+
+  const renderCheckbox = (selected: boolean) => (
+    <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+      {selected && <Label text="✓" size={12} weight="bold" color="#FFFFFF" />}
+    </View>
   );
 
-  // Header icon button
-  const HeaderIconButton = ({ icon, onPress }: { icon: string; onPress?: () => void }) => (
-    <TouchableOpacity style={styles.headerIconBtn} onPress={onPress}>
-      <Text style={styles.headerIcon}>{icon}</Text>
-    </TouchableOpacity>
-  );
-
-  // Deal card component
-  const DealCard = ({ item }: { item: typeof sampleDeals[0] }) => (
-    <TouchableOpacity 
+  const renderDealCard = ({ item }: { item: DealItem }) => (
+    <TouchableOpacity
       style={styles.dealCard}
       activeOpacity={0.7}
       onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
     >
-      <View style={styles.dealCardContent}>
-        {/* Left: Icon */}
-        <View style={styles.dealIconContainer}>
-          <Text style={styles.dealIcon}>📢</Text>
+      <View style={styles.dealIconContainer}>
+        <Image source={images.announcement} style={styles.dealIconImage} />
+      </View>
+
+      <View style={styles.dealContent}>
+        <View style={styles.dealTitleRow}>
+          <Label
+            text={item.title}
+            size={16}
+            weight="bold"
+            color="#1A1A1A"
+            numberOfLines={1}
+            style={styles.dealTitle}
+          />
+          <TouchableOpacity style={styles.shareBtn}>
+            <Image source={images.share} style={styles.shareIcon} />
+          </TouchableOpacity>
         </View>
 
-        {/* Middle: Content */}
-        <View style={styles.dealInfo}>
-          <View style={styles.dealHeader}>
-            <View style={styles.dealTitleContainer}>
-              <Text style={styles.dealTitle}>{item.title}</Text>
-              <Text style={styles.dealDescription}>{item.description}</Text>
+        <Label
+          text={item.description}
+          size={13}
+          color="#888888"
+          style={styles.dealDescription}
+        />
+
+        <View style={styles.dealFooter}>
+          <View style={styles.dateRow}>
+            <Image source={images.clock} style={styles.clockIcon} />
+            <View>
+              <Label text="Ends on" size={11} color="#999999" />
+              <Label text={item.endDate} size={13} weight="bold" color="#1A1A1A" />
             </View>
-            {/* Share button */}
-            <TouchableOpacity style={styles.shareButton}>
-              <Text style={styles.shareIcon}>↗</Text>
-            </TouchableOpacity>
           </View>
-          
-          <View style={styles.dealFooter}>
-            <View style={styles.dealDateContainer}>
-              <Text style={styles.clockIcon}>⏱</Text>
-              <View>
-                <Text style={styles.endsOnText}>Ends on</Text>
-                <Text style={styles.dealDate}>{item.endDate}</Text>
-              </View>
-            </View>
-            
-            <Text style={styles.dealPrice}>${item.pricePerClick}/Click</Text>
-          </View>
+          <Text style={styles.priceText}>
+            ${item.pricePerClick}<Text style={styles.perClickText}>/Click</Text>
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -121,58 +138,107 @@ export default function HomeScreen() {
 
   return (
     <Container style={styles.container}>
-      {/* Header Section */}
-      <View style={styles.headerSection}>
-        <View style={styles.headerRow}>
-          <GradientText text="Sharely" />
-          
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Image source={images.logo} style={styles.logo} />
           <View style={styles.headerIcons}>
-            <HeaderIconButton icon="🎧" />
-            <HeaderIconButton icon="🔔" />
-            <TouchableOpacity>
-              <Image
-                source={{ uri: 'https://i.pravatar.cc/150?img=12' }}
-                style={styles.avatarImage}
-              />
-            </TouchableOpacity>
+            <Image source={images.sound} style={styles.headerIcon} />
+            <Image source={images.notification} style={styles.headerIcon} />
+            <Image source={images.profile} style={styles.avatar} />
           </View>
         </View>
-
-        <Text style={styles.greetingText}>Good Morning, John</Text>
-        <Text style={styles.subtitleText}>
-          Pick a deal, share with friends to earn cash per click.
-        </Text>
+        <Label
+          text="Good Morning, John"
+          size={22}
+          weight="bold"
+          color="#FFFFFF"
+          style={styles.greeting}
+        />
+        <Label
+          text="Pick a deal, share with friends to earn cash per click."
+          size={14}
+          color="rgba(255, 255, 255, 0.7)"
+          style={styles.subtitle}
+        />
       </View>
 
-      {/* White Card Section - stretches to bottom */}
       <View style={styles.whiteCard}>
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputWrapper}>
-            <Text style={styles.searchIcon}>🔍</Text>
+        <View style={styles.searchRow}>
+          <View style={styles.searchBox}>
+            <Image source={images.search} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search by category or deals..."
+              placeholder="Search"
               placeholderTextColor={theme.colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
           </View>
-          {/* Filter button */}
-          <TouchableOpacity style={styles.filterButton}>
-            <Text style={styles.filterIcon}>⚙</Text>
+          <TouchableOpacity
+            style={styles.filterBtn}
+            onPress={() => setFilterVisible(true)}
+          >
+            <Image source={images.filter} style={styles.filterIcon} />
           </TouchableOpacity>
         </View>
 
-        {/* Deals List */}
         <FlatList
           data={sampleDeals}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <DealCard item={item} />}
+          renderItem={renderDealCard}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
         />
       </View>
+
+      {/* Filter Bottom Sheet */}
+      <BottomSheet
+        visible={filterVisible}
+        onClose={() => setFilterVisible(false)}
+        title="Filters"
+      >
+        <Label text="Sort By" size={14} color="#888888" style={styles.filterSectionTitle} />
+        
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.filterScrollView}>
+          {FILTER_OPTIONS.map((option, index) => (
+            <TouchableOpacity
+              key={option.id}
+              style={[
+                styles.filterOptionRow,
+                index < FILTER_OPTIONS.length - 1 && styles.filterOptionBorder,
+              ]}
+              onPress={() => setSelectedFilter(option.id)}
+              activeOpacity={0.7}
+            >
+              {renderCheckbox(selectedFilter === option.id)}
+              <Label
+                text={option.label}
+                size={16}
+                weight={selectedFilter === option.id ? 'semiBold' : 'regular'}
+                color="#1A1A1A"
+              />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Action Buttons */}
+        <View style={styles.filterButtonRow}>
+          <TouchableOpacity style={styles.clearButton} onPress={handleClearFilter}>
+            <Label text="CLEAR ALL" size={14} weight="semiBold" color="#1A1A1A" />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleApplyFilter} activeOpacity={0.8}>
+            <LinearGradient
+              colors={GRADIENT_COLORS}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.applyButton}
+            >
+              <Label text="SHOW RESULTS" size={14} weight="semiBold" color="#FFFFFF" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </BottomSheet>
     </Container>
   );
 }
@@ -184,199 +250,210 @@ const createStyles = (theme: Theme) =>
       paddingTop: s(16),
       paddingBottom: 0,
     },
-    
-    // Header Section
-    headerSection: {
-      paddingTop: s(50),
-      paddingBottom: s(12),
+    header: {
+      paddingTop: s(40),
+      paddingBottom: s(16),
     },
-    headerRow: {
+    headerTop: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
     },
-    logoText: {
-      fontSize: s(28),
-      fontFamily: theme.fonts.bold,
-      fontWeight: 'bold',
+    logo: {
+      width: s(100),
+      height: s(35),
+      resizeMode: 'contain',
     },
     headerIcons: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: s(8),
     },
-    headerIconBtn: {
-      width: s(40),
-      height: s(40),
-      borderRadius: s(20),
-      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
     headerIcon: {
-      fontSize: s(18),
+      width: s(36),
+      height: s(36),
+      resizeMode: 'contain',
     },
-    avatarImage: {
+    avatar: {
       width: s(40),
       height: s(40),
-      borderRadius: s(20),
-      borderWidth: s(2),
-      borderColor: '#23C28C',
+      resizeMode: 'contain',
     },
-    greetingText: {
-      fontSize: s(22),
-      fontFamily: theme.fonts.bold,
-      color: '#FFFFFF',
-      marginTop: s(16),
+    greeting: {
+      marginTop: s(20),
     },
-    subtitleText: {
-      fontSize: s(14),
-      fontFamily: theme.fonts.regular,
-      color: 'rgba(255, 255, 255, 0.7)',
+    subtitle: {
       marginTop: s(4),
     },
-
-    // White Card Section - no bottom border radius to merge with tab bar
     whiteCard: {
       flex: 1,
       backgroundColor: '#FFFFFF',
       borderTopLeftRadius: s(30),
       borderTopRightRadius: s(30),
-      borderBottomLeftRadius: 0,
-      borderBottomRightRadius: 0,
       paddingHorizontal: s(16),
-      paddingTop: s(30),
-      marginTop:s(10)
+      paddingTop: s(24),
+      marginTop: s(12),
     },
-
-    // Search
-    searchContainer: {
+    searchRow: {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: s(16),
     },
-    searchInputWrapper: {
+    searchBox: {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.inputBg,
+      backgroundColor: '#F5F5F5',
       borderRadius: s(30),
       paddingHorizontal: s(16),
       height: s(48),
       marginRight: s(12),
     },
     searchIcon: {
-      fontSize: s(16),
-      marginRight: s(8),
-      opacity: 0.5,
+      width: s(18),
+      height: s(18),
+      resizeMode: 'contain',
+      marginRight: s(10),
+      tintColor: '#999',
     },
     searchInput: {
       flex: 1,
       fontSize: s(14),
       fontFamily: theme.fonts.regular,
       color: theme.colors.text,
+      padding: 0,
     },
-    filterButton: {
-      width: s(48),
-      height: s(48),
-      borderRadius: s(12),
-      backgroundColor: theme.colors.inputBg,
+    filterBtn: {
       justifyContent: 'center',
       alignItems: 'center',
     },
     filterIcon: {
-      fontSize: s(22),
-      color: theme.colors.text,
+      width: s(40),
+      height: s(40),
+      resizeMode: 'contain',
     },
-
-    // Deal Card
     dealCard: {
+      flexDirection: 'row',
       backgroundColor: '#FFFFFF',
       borderRadius: s(16),
-      padding: s(14),
+      padding: s(12),
       marginBottom: s(12),
-      borderWidth: s(1),
-      borderColor: '#F0F0F0',
-    },
-    dealCardContent: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
+      borderWidth: 1,
+      borderColor: '#EFEFEF',
     },
     dealIconContainer: {
-      width: s(50),
-      height: s(50),
-      borderRadius: s(25),
-      backgroundColor: '#E3F2FD',
-      justifyContent: 'center',
-      alignItems: 'center',
       marginRight: s(12),
     },
-    dealIcon: {
-      fontSize: s(24),
+    dealIconImage: {
+      width: s(50),
+      height: s(50),
+      resizeMode: 'contain',
     },
-    dealInfo: {
+    dealContent: {
       flex: 1,
     },
-    dealHeader: {
+    dealTitleRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'flex-start',
+      alignItems: 'center',
     },
-    dealTitleContainer: {
+    dealTitle: {
       flex: 1,
       marginRight: s(8),
     },
-    dealTitle: {
-      fontSize: s(16),
-      fontFamily: theme.fonts.semiBold,
-      color: theme.colors.text,
-      marginBottom: s(2),
-    },
-    dealDescription: {
-      fontSize: s(13),
-      fontFamily: theme.fonts.regular,
-      color: theme.colors.textSecondary,
-      marginBottom: s(10),
-    },
-    shareButton: {
+    shareBtn: {
       padding: s(4),
     },
     shareIcon: {
-      fontSize: s(20),
-      color: theme.colors.textSecondary,
+      width: s(18),
+      height: s(18),
+      resizeMode: 'contain',
+    },
+    dealDescription: {
+      marginTop: s(2),
+      marginBottom: s(10),
     },
     dealFooter: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
     },
-    dealDateContainer: {
+    dateRow: {
       flexDirection: 'row',
       alignItems: 'center',
     },
     clockIcon: {
-      fontSize: s(16),
+      width: s(16),
+      height: s(16),
+      resizeMode: 'contain',
       marginRight: s(6),
-      opacity: 0.6,
     },
-    endsOnText: {
-      fontSize: s(11),
-      fontFamily: theme.fonts.regular,
-      color: theme.colors.textSecondary,
-    },
-    dealDate: {
-      fontSize: s(13),
-      fontFamily: theme.fonts.medium,
-      color: theme.colors.text,
-    },
-    dealPrice: {
-      fontSize: s(20),
+    priceText: {
+      fontSize: s(18),
       fontFamily: theme.fonts.bold,
-      color: '#23C28C',
+      color: '#05894F',
     },
-
-    // List
+    perClickText: {
+      fontSize: s(18),
+      fontFamily: theme.fonts.bold,
+      color: '#1A1A1A',
+    },
     listContent: {
       paddingBottom: s(20),
+    },
+
+    // Filter styles
+    filterSectionTitle: {
+      marginBottom: s(12),
+    },
+    filterScrollView: {
+      maxHeight: s(350),
+    },
+    filterOptionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: s(16),
+    },
+    filterOptionBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: '#F0F0F0',
+    },
+    checkbox: {
+      width: s(22),
+      height: s(22),
+      borderRadius: s(4),
+      borderWidth: 1.5,
+      borderColor: '#D0D0D0',
+      marginRight: s(14),
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#FFFFFF',
+    },
+    checkboxSelected: {
+      backgroundColor: '#23C28C',
+      borderColor: '#23C28C',
+    },
+    filterButtonRow: {
+      flexDirection: 'row',
+      marginTop: s(20),
+      gap: s(12),
+    },
+    clearButton: {
+      flex: 1,
+      height: s(50),
+      borderRadius: s(25),
+      borderWidth: 1,
+      borderColor: '#E0E0E0',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#FFFFFF',
+    },
+    applyButton: {
+      flex: 1,
+      minWidth: s(150),
+      height: s(50),
+      borderRadius: s(25),
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   });

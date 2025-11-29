@@ -195,12 +195,15 @@ const createStyles = (theme: Theme) =>
       backgroundColor: '#FFFFFF',
       marginRight: s(12),
       justifyContent: 'center',
+      alignItems: 'center',
       borderRadius: s(20),
     },
     backButtonIcon: {
       fontSize: s(20),
+      paddingHorizontal: s(2),
       fontFamily: theme.fonts.bold,
       color: '#000000',
+      textAlign: 'center',
     },
     headerTitle: {
       fontSize: s(24),

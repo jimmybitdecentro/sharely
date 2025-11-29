@@ -82,9 +82,7 @@ const Button: React.FC<ButtonProps> = ({
 const createStyles = (theme: any, variant: 'primary' | 'secondary') =>
   StyleSheet.create({
     gradient: {
-      paddingVertical: s(14),
-      paddingHorizontal: s(20),
-      borderRadius: s(25),
+      borderRadius: s(50),
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: s(50),

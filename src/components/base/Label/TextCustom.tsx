@@ -30,14 +30,18 @@ const TextCustom: React.FC<TextCustomProps> = ({
 
   const displayText = useTranslation ? t(text) : text;
 
-  return <Text style={[styles.label, style]}>{displayText}</Text>;
+  return <Text style={[styles.label, style,
+    { fontFamily: theme.fonts.regular}]}
+    >
+      {displayText}</Text>;
 };
 
 const createStyles = (theme: any, fontFamily: 'regular' | 'medium' | 'bold', size: number, mb: number, color: keyof Colors) =>
   StyleSheet.create({
     label: {
       fontSize: size? s(size) : s(14),
-      fontFamily: fontFamily  === 'bold' ? theme.fonts.bold : fontFamily === 'medium' ? theme.fonts.medium : theme.fonts.regular,
+      fontFamily: fontFamily  === 'bold' ?  theme.fonts.bold: fontFamily === 'medium' ? theme.fonts.medium : theme.fonts.regular,
+      fontWeight: fontFamily,
       color: color ? theme.colors[color] : theme.colors.black,
       marginBottom: mb ? s(mb) : 0,
     },

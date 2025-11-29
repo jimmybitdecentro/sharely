@@ -8,42 +8,31 @@ import IVCircle from '../../base/ImageView/IVCircle';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import { MainTabParamList } from '../../../types/navigation';
+import TextCustom from '../../base/Label/TextCustom';
 
-export const MainHeader = ({
-  name = 'Raj',
-
-  profileUri = 'https://i.pravatar.cc/150?img=12',
+export const ActionBar = ({
+  title = 'Notifications',
+  onBackPress = () => {},
 }) => {
 
   const styles = headerStyles();
   const navigation = useNavigation<NavigationProp<MainTabParamList>>();
   return (
     <View style={styles.header}>
-      <View>
-        <IVLogo />
+      <View style={styles.backButtonContainer}>
+        <IVCircle size={40} src={images.back}
+          mr={s(10)}
+          onPress={
+            onBackPress
+          }
+        />
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <IVCircle size={40} src={images.notification}
-          mr={s(10)}
-          onPress={
-            () => navigation.navigate('Notifications')
-          }
-        />
-        <IVCircle size={40} src={images.sound}
-          mr={s(10)}
-          onPress={
-            () => navigation.navigate('HomeStack', { screen: 'HelpSupport' })
-          }
-        />
-        <IVCircle size={40} src={images.profile}
-          mr={s(10)}
-          onPress={
-            () => navigation.navigate('Notifications')
-          }
-        />
-
+      <View style={styles.titleContainer}>
+        <TextCustom text={title} size={16} color="white" fontFamily="bold" />
       </View>
+
+      <View style={styles.backButtonContainer} />
     </View>
   );
 };
@@ -83,10 +72,17 @@ const headerStyles = () =>
 
     header: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
+      justifyContent: 'space-between',
       marginTop: s(15),
-
+    },
+    backButtonContainer: {
+      width: s(40),
+    },
+    titleContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     logo: {
       width: s(120),

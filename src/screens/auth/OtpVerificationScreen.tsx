@@ -13,6 +13,7 @@ import { setCredentials } from '../../store/slices/authSlice';
 import { storageService } from '../../services/storage/storageService';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
+import IVLogo from '../../components/base/ImageView/IVLogo';
 
 type OtpScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'OtpVerification'>;
 type OtpScreenRouteProp = RouteProp<AuthStackParamList, 'OtpVerification'>;
@@ -126,8 +127,6 @@ const OtpVerificationScreen: React.FC = () => {
   // Footer component - matching Login screen style
   const OtpFooter = () => (
     <View style={styles.footerContainer}>
-
-
       <View style={styles.backToLoginContainer}>
         <Text style={styles.backToLoginText}>Wrong email? </Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -142,9 +141,7 @@ const OtpVerificationScreen: React.FC = () => {
   return (
     <Container style={styles.container}>
       {/* Header - same as Login screen */}
-      <View style={styles.header}>
-        <GradientText text="Sharely" />
-      </View>
+     <IVLogo/>
 
       {/* Center wrapper for FormCard */}
       <View style={styles.centerWrapper}>
