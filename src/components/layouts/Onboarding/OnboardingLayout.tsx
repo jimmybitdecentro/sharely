@@ -12,6 +12,8 @@ import Button from '../../base/Button/Button';
 import Label from '../../base/Label/Label';
 import Container from '../Container/Container';
 import { images } from '../../../theme/images';
+import TextCustom from '../../base/Label/TextCustom';
+import Button2 from '../../base/Button/Button2';
 
 interface OnboardingLayoutProps {
   illustrations: ImageSourcePropType | ImageSourcePropType[];
@@ -103,12 +105,13 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
           <View style={{ flex: 1, justifyContent: 'space-between' }}>
             <View style={{ flexDirection: 'column', justifyContent: 'space-between',
              }}>
-              <Label text={title} variant="heading"
+              <TextCustom text={title} fontFamily="bold"
               size={32}
+              mb={theme.spacing.md}
               />
-              <Label text={description}
+              <TextCustom text={description} fontFamily="regular"
                 size={16}
-                style={{ marginBottom: theme.spacing.md }}
+                mb={theme.spacing.md}
               />
             </View>
             <View  >
@@ -116,7 +119,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
                 style={{ marginBottom: theme.spacing.md }}
               />
 
-              <Button
+              <Button2
                 title={secondaryButtonTitle} onPress={secondaryButtonOnPress || (() => { }) as () => void} variant="secondary" />
             </View>
           </View>

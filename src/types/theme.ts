@@ -4,6 +4,13 @@ export interface Colors {
   background: string;
   surface: string;
   text: string;
+  white: string;
+  black: string;
+  gray: string;
+  lightGray: string;
+  darkGray: string;
+  veryDarkGray: string;
+  veryLightGray: string;
   textSecondary: string;
   border: string;
   error: string;
