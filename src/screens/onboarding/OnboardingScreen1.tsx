@@ -30,9 +30,7 @@ const OnboardingScreen1: React.FC = () => {
   };
 
   const handleLogin = () => {
-    // Navigate to Auth stack - adjust based on your navigation structure
-    // @ts-ignore - navigating to root Auth stack
-    navigation.getParent()?.navigate('Auth', { screen: 'Login' });
+    navigation.navigate( 'Login');
   };
 
   return (
@@ -40,7 +38,7 @@ const OnboardingScreen1: React.FC = () => {
     illustrations={images.onboarding1}
     title="Share your links and earn money"
     description="Share your links and earn money when someone clicks your shared link"
-    primaryButtonTitle="GET STARTED"
+    primaryButtonTitle="NEXT"
     primaryButtonOnPress={handleNext}
     secondaryButtonOnPress={handleLogin}
   />

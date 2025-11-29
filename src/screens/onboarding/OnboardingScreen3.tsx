@@ -13,14 +13,12 @@ const OnboardingScreen3: React.FC = () => {
   const handleGetStarted = async () => {
     // Mark onboarding as seen
     await storageService.setItem('@sharely:has_seen_onboarding', true);
-    // Navigate to auth/login
-    navigation.navigate('Auth', { screen: 'Login' });
+    // Navigate to login screen
+    navigation.navigate('Login');
   };
 
   const handleLogin = () => {
-    // Navigate to Auth stack - adjust based on your navigation structure
-    // @ts-ignore - navigating to root Auth stack
-    navigation.getParent()?.navigate('Auth', { screen: 'Login' });
+    navigation.navigate('Login');
   };
 
   return (

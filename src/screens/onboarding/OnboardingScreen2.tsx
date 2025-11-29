@@ -3,7 +3,6 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import OnboardingLayout from '../../components/layouts/Onboarding/OnboardingLayout';
 import { images } from '../../theme/images';
-import Container from '../../components/layouts/Container/Container';
 
 type OnboardingScreen2NavigationProp = StackNavigationProp<any, 'Onboarding2'>;
 
@@ -16,9 +15,7 @@ const OnboardingScreen2: React.FC = () => {
   };
 
   const handleLogin = () => {
-    // Navigate to Auth stack - adjust based on your navigation structure
-    // @ts-ignore - navigating to root Auth stack
-    navigation.getParent()?.navigate('Auth', { screen: 'Login' });
+    navigation.navigate('Login');
   };
 
   return (
