@@ -6,12 +6,14 @@ import {
   ImageSourcePropType,
   ImageBackground,
   Text,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../../../hooks/useTheme';
 import Button from '../../base/Button/Button';
 import Label from '../../base/Label/Label';
 import Container from '../Container/Container';
 import { images } from '../../../theme/images';
+import { s } from '../../../theme/size';
 
 interface OnboardingLayoutProps {
   illustrations: ImageSourcePropType | ImageSourcePropType[];
@@ -53,6 +55,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
           height: 40,
           paddingStart: theme.spacing.lg,
           resizeMode: 'contain',
+          marginTop: Platform.OS === 'android' ? s(40) : 0,
         }}
       />
       <View style={[{

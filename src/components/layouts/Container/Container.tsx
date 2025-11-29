@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, SafeAreaView, ImageBackground, ImageSourcePropType } from 'react-native';
+import { View, StyleSheet, ViewStyle, SafeAreaView, ImageBackground, ImageSourcePropType, Platform } from 'react-native';
 import { useTheme } from '../../../hooks/useTheme';
+import { s } from '../../../theme/size';
 
 // Import images
 const allBg = require('../../../assets/images/allBg.png');
@@ -57,6 +58,8 @@ const createStyles = (theme: any) =>
     },
     container: {
       flex: 1,
+      // paddingTop: Platform.OS === 'android' ? s(20) : 0,
+      paddingHorizontal: Platform.OS === 'android' ? s(20) : 0,
       // Removed background color to show image
     },
   });

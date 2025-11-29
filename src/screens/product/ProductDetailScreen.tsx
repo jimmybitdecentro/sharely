@@ -1,241 +1,468 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal} from 'react-native';
-import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Alert,
+} from 'react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
 import Container from '../../components/layouts/Container/Container';
-import Button from '../../components/base/Button/Button';
 import Label from '../../components/base/Label/Label';
-import ImageView from '../../components/base/ImageView/ImageView';
-import {useTheme} from '../../hooks/useTheme';
-import {useLanguage} from '../../hooks/useLanguage';
-import {HomeStackParamList} from '../../types/navigation';
+import { BottomSheet } from '../../components/common/BottomSheet';
+import { useTheme } from '../../hooks/useTheme';
+import { HomeStackParamList } from '../../types/navigation';
+import { Theme } from '../../types/theme';
+import { s } from '../../theme/size';
+import { images } from '../../theme/images';
 
 type ProductDetailScreenRouteProp = RouteProp<HomeStackParamList, 'ProductDetail'>;
+
+const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
+
+const TERMS_CONDITIONS = [
+  'Offer Valid For Limited Time',
+  'Can Only Be Used Once Per User',
+  'You Earn Money Only When Different People Click Your Link.',
+  "Multiple Clicks From The Same Person Won't Generate Additional Rewards.",
+];
+
+const SHARE_OPTIONS = [
+  { id: 'link', icon: '🔗', color: '#F0F0F0', label: 'Copy' },
+  { id: 'whatsapp', icon: '📱', color: '#25D366', label: 'WhatsApp' },
+  { id: 'instagram', icon: '📷', color: '#E4405F', label: 'Instagram' },
+  { id: 'telegram', icon: '✈️', color: '#0088CC', label: 'Telegram' },
+  { id: 'messenger', icon: '💬', color: '#0084FF', label: 'Messenger' },
+  { id: 'twitter', icon: '🐦', color: '#1DA1F2', label: 'Twitter' },
+  { id: 'wechat', icon: '💚', color: '#7BB32E', label: 'WeChat' },
+  { id: 'more', icon: '•••', color: '#E0E0E0', label: 'More' },
+];
+
+interface ProductData {
+  id: string;
+  title: string;
+  description: string;
+  clicksLeft: number;
+  totalClicks: number;
+  earnPerClick: number;
+  endDate: string;
+  pricePerClick: number;
+  shareLink: string;
+}
 
 const ProductDetailScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<ProductDetailScreenRouteProp>();
-  const {theme} = useTheme();
-  const {t} = useLanguage();
-  const [showShareOptions, setShowShareOptions] = useState(false);
+  const { theme } = useTheme();
   const styles = createStyles(theme);
+  const [shareVisible, setShareVisible] = useState(false);
 
-  const product = {
+  const product: ProductData = {
     id: route.params.productId,
-    title: 'Latest iPhone 15 Pro',
-    price: 120000,
-    earnAmount: 15,
-    images: ['https://via.placeholder.com/400'],
-    description: 'The latest iPhone with amazing features',
-    specs: {
-      display: '6.1 inch',
-      processor: 'A17 Pro',
-      camera: '48MP',
-      battery: '3274 mAh',
-    },
+    title: 'Latest IPhone 15 Pro',
+    description:
+      'Our Collection Of Iphones Are The Latest Model Available In The Market For The Best Price Possible For You. Grab One As Soon As You Can!',
+    clicksLeft: 45,
+    totalClicks: 100,
+    earnPerClick: 15,
+    endDate: '21/09/25',
+    pricePerClick: 6,
+    shareLink: 'Https://Example.Com/Sharely',
+  };
+
+  const progressPercent = (product.clicksLeft / product.totalClicks) * 100;
+
+  const handleCopyLink = () => {
+    Alert.alert('Copied!', 'Link copied to clipboard');
+  };
+
+  const handleGoToLink = () => {
+    console.log('Go to link:', product.shareLink);
+  };
+
+  const handleShare = () => {
+    setShareVisible(true);
+  };
+
+  const handleShareOption = (optionId: string) => {
+    console.log('Share via:', optionId);
+    if (optionId === 'link') {
+      handleCopyLink();
+    }
+    // TODO: Implement actual share functionality for each platform
   };
 
   return (
-    <Container>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backIcon}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{product.title}</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => setShowShareOptions(true)}>
-              <Text style={styles.icon}>📤</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.icon}>🔖</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <ImageView
-          source={{uri: product.images[0]}}
-          style={styles.productImage}
-          resizeMode="cover"
-        />
-        <View style={styles.content}>
-          <Label text={product.title} variant="heading" useTranslation={false} />
-          <Text style={styles.earnText}>
-            {t('earn')} ₹{product.earnAmount}
-          </Text>
-          <Text style={styles.price}>₹{product.price.toLocaleString('en-IN')}</Text>
-          <Text style={styles.description}>{product.description}</Text>
-          <View style={styles.specs}>
-            <View style={styles.specItem}>
-              <Text style={styles.specLabel}>Display</Text>
-              <Text style={styles.specValue}>{product.specs.display}</Text>
-            </View>
-            <View style={styles.specItem}>
-              <Text style={styles.specLabel}>Processor</Text>
-              <Text style={styles.specValue}>{product.specs.processor}</Text>
-            </View>
-            <View style={styles.specItem}>
-              <Text style={styles.specLabel}>Camera</Text>
-              <Text style={styles.specValue}>{product.specs.camera}</Text>
-            </View>
-            <View style={styles.specItem}>
-              <Text style={styles.specLabel}>Battery</Text>
-              <Text style={styles.specValue}>{product.specs.battery}</Text>
+    <Container style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Image source={images.back} style={styles.backIcon} />
+        </TouchableOpacity>
+
+        <Label text="Details" size={20} weight="bold" color="#FFFFFF" />
+
+        <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+          <Image source={images.share} style={styles.shareIconHeader} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Content Card */}
+      <View style={styles.whiteCard}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          {/* Product Header */}
+          <View style={styles.productHeader}>
+            <Image source={images.announcement} style={styles.productIcon} />
+            <View style={styles.productInfo}>
+              <Label text={product.title} size={18} weight="bold" color="#1A1A1A" />
+              <Label
+                text={product.description}
+                size={14}
+                color="#666666"
+                style={styles.productDescription}
+              />
             </View>
           </View>
-          <Button
-            title={t('shareNow')}
-            onPress={() => setShowShareOptions(true)}
-            variant="primary"
-            style={styles.button}
-          />
-        </View>
-      </ScrollView>
-      <Modal
-        visible={showShareOptions}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowShareOptions(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Share Options</Text>
-            <View style={styles.shareOptions}>
-              {['WhatsApp', 'Instagram', 'Facebook', 'Twitter', 'Snapchat', 'Telegram'].map(
-                (option) => (
-                  <TouchableOpacity key={option} style={styles.shareOption}>
-                    <Text style={styles.shareOptionText}>{option}</Text>
-                  </TouchableOpacity>
-                ),
-              )}
+
+          {/* Progress Bar */}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBg}>
+              <LinearGradient
+                colors={GRADIENT_COLORS}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.progressFill, { width: `${progressPercent}%` }]}
+              />
             </View>
-            <Button
-              title={t('share')}
-              onPress={() => setShowShareOptions(false)}
-              variant="primary"
-              style={styles.modalButton}
+            <Label
+              text={`${product.clicksLeft} Clicks Left`}
+              size={14}
+              weight="medium"
+              color="#1A1A1A"
+              style={styles.clicksLeftText}
             />
           </View>
+
+          {/* Info Cards */}
+          <View style={styles.infoCardsRow}>
+            {/* Earn Per Click Card */}
+            <View style={styles.infoCard}>
+              <Image source={images.dollor} style={styles.infoCardIcon} />
+              <View style={styles.infoCardContent}>
+                <Label text={`$${product.earnPerClick}`} size={18} weight="bold" color="#1A1A1A" />
+                <Label text="per unique click" size={11} color="#888888" numberOfLines={1} />
+              </View>
+            </View>
+
+            {/* End Date Card */}
+            <View style={styles.infoCard}>
+              <Image source={images.clock} style={styles.infoCardIcon} />
+              <View style={styles.infoCardContent}>
+                <Label text={product.endDate} size={18} weight="bold" color="#1A1A1A" />
+                <Label text="Ending Soon..." size={11} color="#888888" numberOfLines={1} />
+              </View>
+            </View>
+          </View>
+
+          {/* Terms & Conditions */}
+          <View style={styles.termsSection}>
+            <Label
+              text="Terms & Conditions"
+              size={20}
+              weight="bold"
+              color="#1A1A1A"
+              style={styles.termsTitle}
+            />
+            {TERMS_CONDITIONS.map((term, index) => (
+              <View key={index} style={styles.termRow}>
+                <Label text={`${index + 1}.`} size={15} color="#1A88B3" style={styles.termNumber} />
+                <Label text={term} size={15} color="#666666" style={styles.termText} />
+              </View>
+            ))}
+          </View>
+
+          {/* Link Box */}
+          <View style={styles.linkBox}>
+            <Label text={product.shareLink} size={16} color="#555555" style={styles.linkText} />
+            <TouchableOpacity onPress={handleCopyLink} style={styles.copyButton}>
+              <Image source={images.copy} style={styles.copyIcon} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Price */}
+          <View style={styles.priceContainer}>
+            <Text style={styles.priceText}>
+              ${product.pricePerClick}
+              <Text style={styles.perClickText}>/Click</Text>
+            </Text>
+          </View>
+
+          {/* Go To Link Button */}
+          <TouchableOpacity onPress={handleGoToLink} activeOpacity={0.8}>
+            <LinearGradient
+              colors={GRADIENT_COLORS}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.goToLinkButton}
+            >
+              <Label text="GO TO LINK" size={16} weight="bold" color="#FFFFFF" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+
+      {/* Share Bottom Sheet */}
+      <BottomSheet
+        visible={shareVisible}
+        onClose={() => setShareVisible(false)}
+        title="Short Link Generated!"
+      >
+        <Label
+          text="Your Unique Link Generated! Share It With Your Friends To Earn"
+          size={14}
+          color="#666666"
+          style={styles.shareSubtitle}
+        />
+
+        {/* Share Link Box */}
+        <View style={styles.shareLinkBox}>
+          <Label text={product.shareLink} size={15} color="#555555" style={styles.shareLinkText} />
+          <TouchableOpacity onPress={handleCopyLink}>
+            <Image source={images.copy} style={styles.shareCopyIcon} />
+          </TouchableOpacity>
         </View>
-      </Modal>
+
+        {/* Share Options Grid */}
+        <View style={styles.shareOptionsGrid}>
+          {SHARE_OPTIONS.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              style={styles.shareOptionItem}
+              onPress={() => handleShareOption(option.id)}
+            >
+              <View style={[styles.shareOptionIcon, { backgroundColor: option.color }]}>
+                <Text style={styles.shareOptionEmoji}>{option.icon}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </BottomSheet>
     </Container>
   );
 };
 
-const createStyles = (theme: any) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
-      flex: 1,
+      paddingHorizontal: s(16),
+      paddingTop: s(16),
+      paddingBottom: 0,
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: theme.spacing.md,
-      backgroundColor: theme.colors.background,
+      paddingTop: s(40),
+      paddingBottom: s(16),
+    },
+    backButton: {
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     backIcon: {
-      fontSize: 24,
-      color: theme.colors.text,
+      width: s(44),
+      height: s(44),
+      resizeMode: 'contain',
     },
-    headerTitle: {
+    shareButton: {
+      width: s(44),
+      height: s(44),
+      borderRadius: s(22),
+      backgroundColor: '#FFFFFF',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    shareIconHeader: {
+      width: s(20),
+      height: s(20),
+      resizeMode: 'contain',
+    },
+    whiteCard: {
       flex: 1,
-      fontSize: theme.typography.h3.fontSize,
-      fontWeight: theme.typography.h3.fontWeight,
-      color: theme.colors.text,
-      textAlign: 'center',
+      backgroundColor: '#FFFFFF',
+      borderTopLeftRadius: s(30),
+      borderTopRightRadius: s(30),
+      paddingHorizontal: s(20),
+      paddingTop: s(24),
     },
-    headerIcons: {
+    scrollContent: {
+      paddingBottom: s(30),
+    },
+    productHeader: {
       flexDirection: 'row',
-      gap: theme.spacing.md,
+      marginBottom: s(20),
     },
-    icon: {
-      fontSize: 24,
+    productIcon: {
+      width: s(65),
+      height: s(65),
+      resizeMode: 'contain',
+      marginRight: s(14),
     },
-    productImage: {
-      width: '100%',
-      height: 300,
-    },
-    content: {
-      padding: theme.spacing.md,
-    },
-    earnText: {
-      fontSize: theme.typography.body.fontSize,
-      color: theme.colors.success,
-      fontWeight: '600',
-      marginTop: theme.spacing.sm,
-    },
-    price: {
-      fontSize: theme.typography.h2.fontSize,
-      fontWeight: theme.typography.h2.fontWeight,
-      color: theme.colors.text,
-      marginTop: theme.spacing.sm,
-    },
-    description: {
-      fontSize: theme.typography.body.fontSize,
-      color: theme.colors.textSecondary,
-      marginTop: theme.spacing.md,
-    },
-    specs: {
-      marginTop: theme.spacing.lg,
-    },
-    specItem: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingVertical: theme.spacing.sm,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border,
-    },
-    specLabel: {
-      fontSize: theme.typography.body.fontSize,
-      color: theme.colors.textSecondary,
-    },
-    specValue: {
-      fontSize: theme.typography.body.fontSize,
-      color: theme.colors.text,
-      fontWeight: '600',
-    },
-    button: {
-      width: '100%',
-      marginTop: theme.spacing.xl,
-    },
-    modalOverlay: {
+    productInfo: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'flex-end',
     },
-    modalContent: {
-      backgroundColor: theme.colors.background,
-      borderTopLeftRadius: theme.borderRadius.lg,
-      borderTopRightRadius: theme.borderRadius.lg,
-      padding: theme.spacing.lg,
+    productDescription: {
+      marginTop: s(8),
+      lineHeight: s(22),
     },
-    modalTitle: {
-      fontSize: theme.typography.h3.fontSize,
-      fontWeight: theme.typography.h3.fontWeight,
-      color: theme.colors.text,
-      marginBottom: theme.spacing.lg,
+    progressContainer: {
+      marginBottom: s(20),
+    },
+    progressBg: {
+      height: s(8),
+      backgroundColor: '#E0E0E0',
+      borderRadius: s(4),
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      borderRadius: s(4),
+    },
+    clicksLeftText: {
+      marginTop: s(10),
+    },
+    infoCardsRow: {
+      flexDirection: 'row',
+      gap: s(10),
+      marginBottom: s(28),
+    },
+    infoCard: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: s(65),
+      paddingHorizontal: s(12),
+      backgroundColor: '#F0F5F8',
+      borderRadius: s(8),
+    },
+    infoCardIcon: {
+      width: s(36),
+      height: s(36),
+      resizeMode: 'contain',
+      marginRight: s(10),
+    },
+    infoCardContent: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    termsSection: {
+      marginBottom: s(28),
+    },
+    termsTitle: {
+      marginBottom: s(18),
+    },
+    termRow: {
+      flexDirection: 'row',
+      marginBottom: s(12),
+    },
+    termNumber: {
+      width: s(24),
+    },
+    termText: {
+      flex: 1,
+      lineHeight: s(24),
+    },
+    linkBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#FFFFFF',
+      borderRadius: s(30),
+      paddingHorizontal: s(24),
+      paddingVertical: s(18),
+      marginBottom: s(28),
+      borderWidth: 1,
+      borderColor: '#D0D0D0',
+    },
+    linkText: {
+      flex: 1,
+    },
+    copyButton: {
+      padding: s(4),
+    },
+    copyIcon: {
+      width: s(20),
+      height: s(20),
+      resizeMode: 'contain',
+    },
+    priceContainer: {
+      alignItems: 'center',
+      marginBottom: s(20),
+    },
+    priceText: {
+      fontSize: s(32),
+      fontFamily: theme.fonts.bold,
+      color: '#23C28C',
+    },
+    perClickText: {
+      fontSize: s(32),
+      fontFamily: theme.fonts.bold,
+      color: '#1A1A1A',
+    },
+    goToLinkButton: {
+      height: s(56),
+      borderRadius: s(28),
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+
+    // Share Bottom Sheet Styles
+    shareSubtitle: {
       textAlign: 'center',
+      marginBottom: s(20),
     },
-    shareOptions: {
+    shareLinkBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#FFFFFF',
+      borderRadius: s(30),
+      paddingHorizontal: s(20),
+      paddingVertical: s(16),
+      marginBottom: s(24),
+      borderWidth: 1,
+      borderColor: '#E0E0E0',
+    },
+    shareLinkText: {
+      flex: 1,
+    },
+    shareCopyIcon: {
+      width: s(22),
+      height: s(22),
+      resizeMode: 'contain',
+    },
+    shareOptionsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
-      marginBottom: theme.spacing.lg,
+      paddingHorizontal: s(10),
     },
-    shareOption: {
-      width: '30%',
-      padding: theme.spacing.md,
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.md,
+    shareOptionItem: {
+      width: '25%',
       alignItems: 'center',
-      marginBottom: theme.spacing.md,
+      marginBottom: s(16),
     },
-    shareOptionText: {
-      fontSize: theme.typography.caption.fontSize,
-      color: theme.colors.text,
+    shareOptionIcon: {
+      width: s(52),
+      height: s(52),
+      borderRadius: s(26),
+      justifyContent: 'center',
+      alignItems: 'center',
     },
-    modalButton: {
-      width: '100%',
+    shareOptionEmoji: {
+      fontSize: s(24),
     },
   });
 
 export default ProductDetailScreen;
-
