@@ -11,6 +11,9 @@ export interface User {
   country?: string;
   city?: string;
   profilePicture?: string;
+  occupation?: string;
+  interests?: string;
+  age?: string;
 }
 
 export interface AuthState {

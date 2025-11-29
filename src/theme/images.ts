@@ -16,11 +16,9 @@ export const images = Object.freeze({
   share: require("../assets/images/share.png"),
   clock: require("../assets/images/clock.png"),
   back: require("../assets/images/backBtn.png"),
-
-
-
-
-
-
-  
+  dollor: require("../assets/images/dollor.png"),
+  copy: require("../assets/images/clipboard.png"),
+  earn: require("../assets/images/earn.png"),
+  link: require("../assets/images/link.png"),
+  wallet: require("../assets/images/wallet.png"),
 });

@@ -9,13 +9,14 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import LinearGradient from 'react-native-linear-gradient';
 import Container from '../../components/layouts/Container/Container';
 import Label from '../../components/base/Label/Label';
 import { BottomSheet } from '../../components/common/BottomSheet';
-import { HomeStackParamList } from '../../types/navigation';
+import { HomeStackParamList, MainTabParamList, RootStackParamList } from '../../types/navigation';
 import { useTheme } from '../../hooks/useTheme';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
@@ -65,8 +66,16 @@ const FILTER_OPTIONS = [
 
 type DealItem = typeof sampleDeals[0];
 
+type HomeScreenNavigationProp = CompositeNavigationProp<
+  StackNavigationProp<HomeStackParamList>,
+  CompositeNavigationProp<
+    BottomTabNavigationProp<MainTabParamList>,
+    StackNavigationProp<RootStackParamList>
+  >
+>;
+
 export default function HomeScreen() {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVisible, setFilterVisible] = useState(false);
@@ -144,7 +153,12 @@ export default function HomeScreen() {
           <View style={styles.headerIcons}>
             <Image source={images.sound} style={styles.headerIcon} />
             <Image source={images.notification} style={styles.headerIcon} />
-            <Image source={images.profile} style={styles.avatar} />
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ProfileModal')}
+              activeOpacity={0.7}
+            >
+              <Image source={images.profile} style={styles.avatar} />
+            </TouchableOpacity>
           </View>
         </View>
         <Label

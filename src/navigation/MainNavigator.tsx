@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ImageSourcePropType } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import LinearGradient from 'react-native-linear-gradient';
 import { MainTabParamList } from '../types/navigation';
@@ -7,6 +7,7 @@ import HomeStackNavigator from './HomeStackNavigator';
 import ProfileStackNavigator from './ProfileStackNavigator';
 import MyLinksScreen from '../screens/links/MyLinksScreen';
 import { s } from '../theme/size';
+import { images } from '../theme/images';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -36,16 +37,16 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
           };
 
           // Get icon based on route
-          const getIcon = () => {
+          const getIcon = (): ImageSourcePropType => {
             switch (route.name) {
               case 'HomeStack':
-                return '💰';
+                return images.earn;
               case 'MyLinksScreen':
-                return '🔗';
+                return images.link;
               case 'ProfileStack':
-                return '💳';
+                return images.wallet;
               default:
-                return '•';
+                return images.earn;
             }
           };
 
@@ -77,7 +78,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                   end={{ x: 1, y: 0 }}
                   style={styles.activeTabContent}
                 >
-                  <Text style={styles.activeTabIcon}>{getIcon()}</Text>
+                  <Image source={getIcon()} style={styles.activeTabIcon} />
                   <Text style={styles.activeTabLabel}>{getLabelText()}</Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -91,7 +92,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
               style={styles.inactiveTabButton}
               activeOpacity={0.7}
             >
-              <Text style={styles.inactiveTabIcon}>{getIcon()}</Text>
+              <Image source={getIcon()} style={styles.inactiveTabIcon} />
               <Text style={styles.inactiveTabLabel}>{getLabelText()}</Text>
             </TouchableOpacity>
           );
@@ -153,7 +154,10 @@ const styles = StyleSheet.create({
     gap: s(6),
   },
   activeTabIcon: {
-    fontSize: s(16),
+    width: s(20),
+    height: s(20),
+    resizeMode: 'contain',
+    tintColor: '#FFFFFF',
   },
   activeTabLabel: {
     fontSize: s(13),
@@ -169,8 +173,10 @@ const styles = StyleSheet.create({
     paddingVertical: s(10),
   },
   inactiveTabIcon: {
-    fontSize: s(16),
-    opacity: 0.7,
+    width: s(20),
+    height: s(20),
+    resizeMode: 'contain',
+    tintColor: 'rgba(255, 255, 255, 0.7)',
   },
   inactiveTabLabel: {
     fontSize: s(13),

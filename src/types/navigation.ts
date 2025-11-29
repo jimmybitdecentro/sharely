@@ -3,6 +3,12 @@ import {NavigatorScreenParams} from '@react-navigation/native';
 export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList>;
   Onboarding: undefined;
+  ProfileModal: undefined;
+  EditProfileModal: undefined;
+  EditProfileFormModal: undefined;
+  PreferencesModal: undefined;
+  ReferralModal: undefined;
+  TransactionsModal: undefined;
 };
 
 export type AuthStackParamList = {
@@ -28,12 +34,16 @@ export type HomeStackParamList = {
 };
 
 export type ProfileStackParamList = {
+  Wallet: undefined;
   Profile: undefined;
+  Transactions: undefined;
+  Preferences: undefined;
   MyEarnings: undefined;
   MyCampaigns: undefined;
   MyOrders: undefined;
   Settings: undefined;
   EditProfile: undefined;
+  EditProfileForm: undefined;
   NotificationSettings: undefined;
   HelpSupport: undefined;
 };

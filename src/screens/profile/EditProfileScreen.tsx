@@ -1,161 +1,257 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, ScrollView, TouchableOpacity, Image} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {useSelector} from 'react-redux';
+import React from 'react';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { useSelector } from 'react-redux';
+import Feather from '@react-native-vector-icons/feather';
 import Container from '../../components/layouts/Container/Container';
-import Button from '../../components/base/Button/Button';
-import InputField from '../../components/base/InputField/InputField';
+import FormCard from '../../components/common/FormCard/FormCard';
 import Label from '../../components/base/Label/Label';
-import {useTheme} from '../../hooks/useTheme';
-import {useLanguage} from '../../hooks/useLanguage';
-import {RootState} from '../../store';
+import { useTheme } from '../../hooks/useTheme';
+import { Theme } from '../../types/theme';
+import { RootStackParamList } from '../../types/navigation';
+import { RootState } from '../../store';
+import { s } from '../../theme/size';
+import { images } from '../../theme/images';
+
+type EditProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
+interface ProfileField {
+  label: string;
+  value: string;
+}
+
+// Options for converting values to display labels
+const DISPLAY_LABELS: Record<string, Record<string, string>> = {
+  occupation: {
+    software_technology: 'Software Technology',
+    healthcare: 'Healthcare',
+    education: 'Education',
+    finance: 'Finance',
+    marketing: 'Marketing',
+    design: 'Design',
+    other: 'Other',
+  },
+  interests: {
+    tech: 'Tech',
+    fashion: 'Fashion',
+    sports: 'Sports',
+    music: 'Music',
+    travel: 'Travel',
+    food: 'Food',
+    gaming: 'Gaming',
+  },
+  gender: {
+    male: 'Male',
+    female: 'Female',
+  },
+  country: {
+    india: 'India',
+    usa: 'USA',
+    uk: 'UK',
+    canada: 'Canada',
+    australia: 'Australia',
+  },
+  city: {
+    hyderabad: 'Hyderabad',
+    mumbai: 'Mumbai',
+    delhi: 'Delhi',
+    bangalore: 'Bangalore',
+    chennai: 'Chennai',
+    new_york: 'New York',
+    los_angeles: 'Los Angeles',
+    chicago: 'Chicago',
+    san_francisco: 'San Francisco',
+    london: 'London',
+    manchester: 'Manchester',
+    birmingham: 'Birmingham',
+    toronto: 'Toronto',
+    vancouver: 'Vancouver',
+    montreal: 'Montreal',
+    sydney: 'Sydney',
+    melbourne: 'Melbourne',
+    brisbane: 'Brisbane',
+  },
+};
+
+const getDisplayLabel = (field: string, value: string | undefined, defaultValue: string): string => {
+  if (!value) return defaultValue;
+  return DISPLAY_LABELS[field]?.[value] || value;
+};
 
 const EditProfileScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const {theme} = useTheme();
-  const {t} = useLanguage();
+  const navigation = useNavigation<EditProfileScreenNavigationProp>();
+  const { theme } = useTheme();
   const user = useSelector((state: RootState) => state.auth.user);
-  const [formData, setFormData] = useState({
-    fullName: user?.name || '',
-    email: user?.email || '',
-    phoneNumber: user?.phone || '',
-    dateOfBirth: user?.dateOfBirth || '',
-    gender: user?.gender || '',
-    country: user?.country || '',
-    city: user?.city || '',
-  });
-  const [loading, setLoading] = useState(false);
   const styles = createStyles(theme);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({...prev, [field]: value}));
+  const profileFields: ProfileField[] = [
+    { label: 'Legal Name', value: user?.name || 'John Deo' },
+    { label: 'Email', value: user?.email || 'example@gmail.com' },
+    { label: 'Occupation', value: getDisplayLabel('occupation', user?.occupation, 'Software Technology') },
+    { label: 'Interests', value: getDisplayLabel('interests', user?.interests, 'Tech') },
+    { label: 'Age', value: user?.age ? `${user.age} years` : '37 years' },
+    { label: 'Gender', value: getDisplayLabel('gender', user?.gender, 'Male') },
+    { label: 'Country', value: getDisplayLabel('country', user?.country, 'India') },
+    { label: 'City', value: getDisplayLabel('city', user?.city, 'Hyderabad') },
+  ];
+
+  const handleEditProfile = () => {
+    navigation.navigate('EditProfileFormModal');
   };
 
-  const handleSave = async () => {
-    setLoading(true);
-    // Implement save logic
-    setLoading(false);
-  };
+  const renderProfileField = (field: ProfileField, index: number) => (
+    <View
+      key={field.label}
+      style={[
+        styles.fieldRow,
+        index < profileFields.length - 1 && styles.fieldRowBorder,
+      ]}
+    >
+      <Label text={field.label} size={14} color="#666666" />
+      <Label text={field.value} size={14} weight="medium" color="#1A1A1A" />
+    </View>
+  );
 
   return (
-    <Container>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backIcon}>←</Text>
-          </TouchableOpacity>
-          <Label
-            text={t('myProfile')}
-            variant="heading"
-            style={styles.title}
-            useTranslation={true}
-          />
-        </View>
-        <View style={styles.content}>
+    <Container style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Feather name="arrow-left" size={s(20)} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Label text="Edit Profile" size={20} weight="bold" color="#FFFFFF" />
+        <View style={styles.headerPlaceholder} />
+      </View>
+
+      {/* Main Content Card */}
+      <FormCard
+        title=""
+        buttonText="EDIT PROFILE"
+        onSubmit={handleEditProfile}
+        position="belowHeader"
+        cardStyle={styles.formCardStyle}
+      >
+        {/* Profile Avatar Section */}
+        <View style={styles.avatarSection}>
           <View style={styles.avatarContainer}>
             <Image
-              source={{uri: user?.profilePicture || 'https://via.placeholder.com/80'}}
+              source={
+                user?.profilePicture
+                  ? { uri: user.profilePicture }
+                  : images.profile
+              }
               style={styles.avatar}
             />
-            <Label text={user?.name || 'User'} variant="subtitle" useTranslation={false} />
           </View>
-          <InputField
-            label={t('fullName')}
-            placeholder={t('fullName')}
-            value={formData.fullName}
-            onChangeText={(text) => handleInputChange('fullName', text)}
-          />
-          <InputField
-            label={t('email')}
-            placeholder={t('email')}
-            value={formData.email}
-            onChangeText={(text) => handleInputChange('email', text)}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <InputField
-            label={t('phoneNumber')}
-            placeholder={t('phoneNumber')}
-            value={formData.phoneNumber}
-            onChangeText={(text) => handleInputChange('phoneNumber', text)}
-            keyboardType="phone-pad"
-          />
-          <InputField
-            label={t('dateOfBirth')}
-            placeholder={t('dateOfBirth')}
-            value={formData.dateOfBirth}
-            onChangeText={(text) => handleInputChange('dateOfBirth', text)}
-          />
-          <InputField
-            label={t('gender')}
-            placeholder={t('gender')}
-            value={formData.gender}
-            onChangeText={(text) => handleInputChange('gender', text)}
-          />
-          <InputField
-            label={t('country')}
-            placeholder={t('country')}
-            value={formData.country}
-            onChangeText={(text) => handleInputChange('country', text)}
-          />
-          <InputField
-            label={t('city')}
-            placeholder={t('city')}
-            value={formData.city}
-            onChangeText={(text) => handleInputChange('city', text)}
-          />
-          <Button
-            title={t('saveChanges')}
-            onPress={handleSave}
-            variant="primary"
-            loading={loading}
-            style={styles.button}
-          />
+
+          {/* Verified Badge */}
+          <View style={styles.verifiedBadge}>
+            <View style={styles.verifiedIcon}>
+              <Feather name="check" size={s(12)} color="#FFFFFF" />
+            </View>
+            <Label text="Verified Account" size={14} color="#23C28C" weight="medium" />
+          </View>
         </View>
-      </ScrollView>
+
+        {/* Profile Details Card */}
+        <View style={styles.detailsCard}>
+          {profileFields.map((field, index) => renderProfileField(field, index))}
+        </View>
+      </FormCard>
     </Container>
   );
 };
 
-const createStyles = (theme: any) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
-      flex: 1,
+      paddingHorizontal: s(16),
+      paddingTop: s(16),
+      paddingBottom: 0,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: theme.spacing.md,
-      backgroundColor: theme.colors.background,
+      justifyContent: 'space-between',
+      paddingTop: s(40),
+      paddingBottom: s(20),
     },
-    backIcon: {
-      fontSize: 24,
-      color: theme.colors.text,
-      marginRight: theme.spacing.md,
+    backButton: {
+      width: s(44),
+      height: s(44),
+      borderRadius: s(22),
+      backgroundColor: '#23C28C',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
-    title: {
-      flex: 1,
+    headerPlaceholder: {
+      width: s(44),
     },
-    content: {
-      padding: theme.spacing.md,
+    formCardStyle: {
+      marginTop: s(10),
+      marginBottom: s(30),
+      overflow: 'hidden',
+    },
+    avatarSection: {
+      alignItems: 'center',
+      marginBottom: s(24),
     },
     avatarContainer: {
+      width: s(100),
+      height: s(100),
+      borderRadius: s(50),
+      backgroundColor: '#B8D4E8',
+      justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: theme.spacing.lg,
+      overflow: 'hidden',
+      marginBottom: s(12),
     },
     avatar: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: theme.colors.surface,
-      marginBottom: theme.spacing.md,
+      width: s(100),
+      height: s(100),
+      borderRadius: s(50),
     },
-    button: {
-      width: '100%',
-      marginTop: theme.spacing.lg,
-      marginBottom: theme.spacing.xl,
+    verifiedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: s(6),
+    },
+    verifiedIcon: {
+      width: s(20),
+      height: s(20),
+      borderRadius: s(10),
+      backgroundColor: '#23C28C',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    detailsCard: {
+      backgroundColor: '#EAEAEA',
+      borderRadius: s(16),
+      borderWidth: 1,
+      borderColor: '#E8E8E8',
+      paddingHorizontal: s(16),
+      marginBottom: s(24),
+    },
+    fieldRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: s(14),
+    },
+    fieldRowBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: '#F0F0F0',
     },
   });
 
 export default EditProfileScreen;
-
