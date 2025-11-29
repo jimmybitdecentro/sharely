@@ -6,34 +6,31 @@ import {useLanguage} from '../../../hooks/useLanguage';
 interface LabelProps {
   text: string;
   variant?: 'default' | 'heading' | 'subtitle';
+  size?: number;
   style?: TextStyle;
   useTranslation?: boolean;
 }
 
 const Label: React.FC<LabelProps> = ({
   text,
+  size = 12,
   variant = 'default',
   style,
   useTranslation = true,
 }) => {
   const {theme} = useTheme();
   const {t} = useLanguage();
-  const styles = createStyles(theme, variant);
+  const styles = createStyles(theme, variant, size);
 
   const displayText = useTranslation ? t(text) : text;
 
   return <Text style={[styles.label, style]}>{displayText}</Text>;
 };
 
-const createStyles = (theme: any, variant: 'default' | 'heading' | 'subtitle') =>
+const createStyles = (theme: any, variant: 'default' | 'heading' | 'subtitle', size: number) =>
   StyleSheet.create({
     label: {
-      fontSize:
-        variant === 'heading'
-          ? theme.typography.h2.fontSize
-          : variant === 'subtitle'
-          ? theme.typography.h3.fontSize
-          : theme.typography.body.fontSize,
+      fontSize: size,
       fontWeight:
         variant === 'heading'
           ? theme.typography.h2.fontWeight

@@ -16,6 +16,7 @@ import { useTheme } from '../../hooks/useTheme';
 import Button from '../../components/base/Button/Button';
 import Container from '../../components/layouts/Container/Container';
 import { images } from '../../theme/images';
+import OnboardingLayout from '../../components/layouts/Onboarding/OnboardingLayout';
 
 type OnboardingScreen1NavigationProp = StackNavigationProp<any, 'Onboarding1'>;
 
@@ -35,57 +36,14 @@ const OnboardingScreen1: React.FC = () => {
   };
 
   return (
-    <Container >
-      {/* App Title with Gradient */}
-      <Image
-          source={images.logo}
-          style={{
-            width: 100,
-            height: 40,
-            paddingStart: theme.spacing.lg,
-            resizeMode: 'contain',
-          }}
-        />
-      <View style={[ {alignItems: 'center',  marginBottom: theme.spacing.xl }]}>
-       
-        <Image
-          source={images.onboarding1}
-          style={[
-            styles.illustration,
-            { width: '90%', 
-              resizeMode: 'contain' },
-          ]}
-        />
-      </View>
-
-      {/* White Card Container */}
-      <View style={styles.cardContainer}>
-        <ImageBackground
-        resizeMode='stretch'
-          source={images.white_transparent_bg}
-          style={{
-            flex: 1,
-            padding: theme.spacing.lg,
-          }}
-        >
-          <Text style={styles.cardTitle}>
-            Share All Your Campaign Links
-          </Text>
-          <Text style={styles.cardDescription}>
-            Pick advertiser campaign links inside Sharely and share with your
-            friends in one tap
-          </Text>
-
-          {/* NEXT Button with Gradient */}
-          <Button title="NEXT" onPress={handleNext} variant="primary"
-            style={{ marginBottom: theme.spacing.md }}
-          />
-
-          <Button title="LOGIN" onPress={handleLogin} variant="secondary" />
-
-        </ImageBackground>
-      </View>
-    </Container>
+    <OnboardingLayout
+    illustrations={images.onboarding1}
+    title="Share your links and earn money"
+    description="Share your links and earn money when someone clicks your shared link"
+    primaryButtonTitle="GET STARTED"
+    primaryButtonOnPress={handleNext}
+    secondaryButtonOnPress={handleLogin}
+  />
   );
 };
 
@@ -122,6 +80,7 @@ const createStyles = (theme: any) =>
       maxHeight: 400,
     },
     cardContainer: {
+      backgroundColor: 'blue',
       position: 'absolute',
       bottom: 0,
       left: 0,
