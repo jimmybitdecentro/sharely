@@ -10,9 +10,6 @@ import { NavigationProp } from '@react-navigation/native';
 import { MainTabParamList } from '../../../types/navigation';
 
 export const MainHeader = ({
-  name = 'Raj',
-
-  profileUri = 'https://i.pravatar.cc/150?img=12',
 }) => {
 
   const styles = headerStyles();
@@ -33,13 +30,13 @@ export const MainHeader = ({
         <IVCircle size={40} src={images.sound}
           mr={s(10)}
           onPress={
-            () => navigation.navigate('HomeStack', { screen: 'HelpSupport' })
+            () => navigation.navigate('HelpSupport')
           }
         />
         <IVCircle size={40} src={images.profile}
           mr={s(10)}
           onPress={
-            () => navigation.navigate('Notifications')
+            () => navigation.navigate('ProfileStack', { screen: 'Profile' })
           }
         />
 
@@ -51,36 +48,7 @@ export const MainHeader = ({
 // ---------------- Styles ----------------
 const headerStyles = () =>
   StyleSheet.create({
-    headerWrap: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: s(4),
-      paddingVertical: s(6),
-    },
-    left: {
-      flexDirection: 'column',
-    },
-
-    greeting: {
-      marginTop: s(6),
-      color: '#444',
-      fontSize: s(14),
-    },
-    right: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    iconBtn: {
-      padding: s(8),
-      marginRight: s(8),
-    },
-    avatar: {
-      width: s(40),
-      height: s(40),
-      borderRadius: s(20),
-    },
-
+  
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -88,14 +56,5 @@ const headerStyles = () =>
       marginTop: s(15),
 
     },
-    logo: {
-      width: s(120),
-      height: s(45),
-      resizeMode: 'contain',
-    },
-    profileImg: {
-      width: s(40),
-      height: s(40),
-      borderRadius: 20,
-    },
+   
   });

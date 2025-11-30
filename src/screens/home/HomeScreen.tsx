@@ -9,17 +9,20 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import LinearGradient from 'react-native-linear-gradient';
 import Container from '../../components/layouts/Container/Container';
 import Label from '../../components/base/Label/Label';
 import { BottomSheet } from '../../components/common/BottomSheet';
-import { HomeStackParamList } from '../../types/navigation';
+import { HomeStackParamList, MainTabParamList, RootStackParamList } from '../../types/navigation';
 import { useTheme } from '../../hooks/useTheme';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
 import { images } from '../../theme/images';
+import { MainHeader } from '../../components/common/Headers/MainHeader';
+import WhiteCard from '../../components/common/WhiteCard';
 
 const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
 
@@ -65,8 +68,16 @@ const FILTER_OPTIONS = [
 
 type DealItem = typeof sampleDeals[0];
 
+type HomeScreenNavigationProp = CompositeNavigationProp<
+  StackNavigationProp<HomeStackParamList>,
+  CompositeNavigationProp<
+    BottomTabNavigationProp<MainTabParamList>,
+    StackNavigationProp<RootStackParamList>
+  >
+>;
+
 export default function HomeScreen() {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVisible, setFilterVisible] = useState(false);
@@ -137,32 +148,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <Container style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Image source={images.logo} style={styles.logo} />
-          <View style={styles.headerIcons}>
-            <Image source={images.sound} style={styles.headerIcon} />
-            <Image source={images.notification} style={styles.headerIcon} />
-            <Image source={images.profile} style={styles.avatar} />
-          </View>
-        </View>
-        <Label
-          text="Good Morning, John"
-          size={22}
-          weight="bold"
-          color="#FFFFFF"
-          style={styles.greeting}
-        />
-        <Label
-          text="Pick a deal, share with friends to earn cash per click."
-          size={14}
-          color="rgba(255, 255, 255, 0.7)"
-          style={styles.subtitle}
-        />
-      </View>
+    <Container >
+    <MainHeader />
 
-      <View style={styles.whiteCard}>
+      <WhiteCard>
         <View style={styles.searchRow}>
           <View style={styles.searchBox}>
             <Image source={images.search} style={styles.searchIcon} />
@@ -189,7 +178,7 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
         />
-      </View>
+      </WhiteCard>
 
       {/* Filter Bottom Sheet */}
       <BottomSheet
@@ -284,15 +273,6 @@ const createStyles = (theme: Theme) =>
     },
     subtitle: {
       marginTop: s(4),
-    },
-    whiteCard: {
-      flex: 1,
-      backgroundColor: '#FFFFFF',
-      borderTopLeftRadius: s(30),
-      borderTopRightRadius: s(30),
-      paddingHorizontal: s(16),
-      paddingTop: s(24),
-      marginTop: s(12),
     },
     searchRow: {
       flexDirection: 'row',

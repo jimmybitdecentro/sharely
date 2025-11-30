@@ -5,6 +5,7 @@ import {useTheme} from '../../hooks/useTheme';
 import { ActionBar } from '../../components/common/Headers/ActionBar';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import TextCustom from '../../components/base/Label/TextCustom';
+import WhiteCard from '../../components/common/WhiteCard';
 import { s } from '../../theme/size';
 import Feather from '@react-native-vector-icons/feather';
 
@@ -142,7 +143,7 @@ const NotificationsScreen: React.FC = () => {
         }}
       />
 
-        <View style={styles.notificationsContainer}>
+<WhiteCard>
           <FlatList
             data={sampleNotifications}
             keyExtractor={(item) => item.id}
@@ -150,7 +151,7 @@ const NotificationsScreen: React.FC = () => {
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           />
-        </View>
+        </WhiteCard>
     </Container>
   );
 };
@@ -160,16 +161,6 @@ const createStyles = (theme: any) =>
     screen: {
       flex: 1,
       padding: s(16),
-    },
-    notificationsContainer: {
-      flex: 1,
-      backgroundColor: '#FFFFFF',
-      borderTopLeftRadius: s(20),
-      borderTopRightRadius: s(20),
-      borderBottomLeftRadius: s(12),
-      borderBottomRightRadius: s(12),
-      padding: s(16),
-      marginTop: s(16),
     },
     listContent: {
       paddingBottom: s(20),

@@ -12,11 +12,12 @@ import TextCustom from '../../base/Label/TextCustom';
 
 export const ActionBar = ({
   title = 'Notifications',
-  onBackPress = () => {},
+  onBackPress = () => { },
+  onSharePress = () => { },
+  sharePress = false,
 }) => {
 
   const styles = headerStyles();
-  const navigation = useNavigation<NavigationProp<MainTabParamList>>();
   return (
     <View style={styles.header}>
       <View style={styles.backButtonContainer}>
@@ -29,10 +30,16 @@ export const ActionBar = ({
       </View>
 
       <View style={styles.titleContainer}>
-        <TextCustom text={title} size={16} color="white" fontFamily="bold" />
+        <TextCustom text={title} size={20} color="white" fontFamily="bold" />
       </View>
 
-      <View style={styles.backButtonContainer} />
+
+      {sharePress ? <IVCircle size={40} src={images.share}
+        mr={s(10)}
+        onPress={ onSharePress }
+      />
+        : <View style={styles.backButtonContainer} />
+      }
     </View>
   );
 };
@@ -80,7 +87,7 @@ const headerStyles = () =>
       width: s(40),
     },
     titleContainer: {
-      flex: 1,
+
       alignItems: 'center',
       justifyContent: 'center',
     },

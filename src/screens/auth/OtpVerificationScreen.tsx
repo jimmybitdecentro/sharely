@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useDispatch } from 'react-redux';
@@ -14,6 +14,8 @@ import { storageService } from '../../services/storage/storageService';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
 import IVLogo from '../../components/base/ImageView/IVLogo';
+import IVCircle from '../../components/base/ImageView/IVCircle';
+import { images } from '../../theme/images';
 
 type OtpScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'OtpVerification'>;
 type OtpScreenRouteProp = RouteProp<AuthStackParamList, 'OtpVerification'>;
@@ -141,8 +143,10 @@ const OtpVerificationScreen: React.FC = () => {
   return (
     <Container style={styles.container}>
       {/* Header - same as Login screen */}
-     <IVLogo/>
-
+      <View style={styles.header}>
+       <IVCircle size={40} src={images.back_white} onPress={() => navigation.goBack()} />
+       <IVLogo />
+      </View>
       {/* Center wrapper for FormCard */}
       <View style={styles.centerWrapper}>
         <FormCard
@@ -205,8 +209,10 @@ const createStyles = (theme: Theme) =>
       padding: s(19),
     },
     header: {
-      paddingTop: theme.spacing.xl,
-      paddingBottom: theme.spacing.lg,
+     flexDirection: 'row',
+     alignItems: 'center',
+     gap: s(10),
+     marginBottom: s(10),
     },
     centerWrapper: {
       flex: 1,

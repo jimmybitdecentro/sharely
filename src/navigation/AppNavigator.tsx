@@ -6,6 +6,12 @@ import {useSelector} from 'react-redux';
 import {RootState} from '../store';
 import MainNavigator from './MainNavigator';
 import OnboardingNavigator from './OnboardingNavigator';
+import ProfileScreen from '../screens/profile/ProfileScreen';
+import EditProfileScreen from '../screens/profile/EditProfileScreen';
+import EditProfileFormScreen from '../screens/profile/EditProfileFormScreen';
+import PreferencesScreen from '../screens/profile/PreferencesScreen';
+import ReferralScreen from '../screens/profile/ReferralScreen';
+import TransactionsScreen from '../screens/wallet/TransactionsScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -22,7 +28,57 @@ const AppNavigator: React.FC = () => {
         {!isAuthenticated ? (
           <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
         ) : (
-          <Stack.Screen name="Main" component={MainNavigator} />
+          <>
+            <Stack.Screen name="Main" component={MainNavigator} />
+            <Stack.Screen
+              name="ProfileModal"
+              component={ProfileScreen}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="EditProfileModal"
+              component={EditProfileScreen}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="EditProfileFormModal"
+              component={EditProfileFormScreen}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="PreferencesModal"
+              component={PreferencesScreen}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="ReferralModal"
+              component={ReferralScreen}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="TransactionsModal"
+              component={TransactionsScreen}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

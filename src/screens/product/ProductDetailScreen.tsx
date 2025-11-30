@@ -18,8 +18,13 @@ import { HomeStackParamList } from '../../types/navigation';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
 import { images } from '../../theme/images';
+import WhiteCard from '../../components/common/WhiteCard';
+import { ActionBar } from '../../components/common/Headers/ActionBar';
 
-type ProductDetailScreenRouteProp = RouteProp<HomeStackParamList, 'ProductDetail'>;
+type ProductDetailScreenRouteProp = RouteProp<
+  HomeStackParamList,
+  'ProductDetail'
+>;
 
 const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
 
@@ -28,17 +33,6 @@ const TERMS_CONDITIONS = [
   'Can Only Be Used Once Per User',
   'You Earn Money Only When Different People Click Your Link.',
   "Multiple Clicks From The Same Person Won't Generate Additional Rewards.",
-];
-
-const SHARE_OPTIONS = [
-  { id: 'link', icon: '🔗', color: '#F0F0F0', label: 'Copy' },
-  { id: 'whatsapp', icon: '📱', color: '#25D366', label: 'WhatsApp' },
-  { id: 'instagram', icon: '📷', color: '#E4405F', label: 'Instagram' },
-  { id: 'telegram', icon: '✈️', color: '#0088CC', label: 'Telegram' },
-  { id: 'messenger', icon: '💬', color: '#0084FF', label: 'Messenger' },
-  { id: 'twitter', icon: '🐦', color: '#1DA1F2', label: 'Twitter' },
-  { id: 'wechat', icon: '💚', color: '#7BB32E', label: 'WeChat' },
-  { id: 'more', icon: '•••', color: '#E0E0E0', label: 'More' },
 ];
 
 interface ProductData {
@@ -58,7 +52,6 @@ const ProductDetailScreen: React.FC = () => {
   const route = useRoute<ProductDetailScreenRouteProp>();
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  const [shareVisible, setShareVisible] = useState(false);
 
   const product: ProductData = {
     id: route.params.productId,
@@ -83,41 +76,27 @@ const ProductDetailScreen: React.FC = () => {
     console.log('Go to link:', product.shareLink);
   };
 
-  const handleShare = () => {
-    setShareVisible(true);
-  };
-
-  const handleShareOption = (optionId: string) => {
-    console.log('Share via:', optionId);
-    if (optionId === 'link') {
-      handleCopyLink();
-    }
-    // TODO: Implement actual share functionality for each platform
-  };
-
   return (
     <Container style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Image source={images.back} style={styles.backIcon} />
-        </TouchableOpacity>
-
-        <Label text="Details" size={20} weight="bold" color="#FFFFFF" />
-
-        <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-          <Image source={images.share} style={styles.shareIconHeader} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Content Card */}
-      <View style={styles.whiteCard}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+     
+<ActionBar title="Product Detail"
+ onBackPress={() => navigation.goBack()} 
+ />
+      <WhiteCard>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
           {/* Product Header */}
           <View style={styles.productHeader}>
             <Image source={images.announcement} style={styles.productIcon} />
             <View style={styles.productInfo}>
-              <Label text={product.title} size={18} weight="bold" color="#1A1A1A" />
+              <Label
+                text={product.title}
+                size={18}
+                weight="bold"
+                color="#1A1A1A"
+              />
               <Label
                 text={product.description}
                 size={14}
@@ -152,8 +131,18 @@ const ProductDetailScreen: React.FC = () => {
             <View style={styles.infoCard}>
               <Image source={images.dollor} style={styles.infoCardIcon} />
               <View style={styles.infoCardContent}>
-                <Label text={`$${product.earnPerClick}`} size={18} weight="bold" color="#1A1A1A" />
-                <Label text="per unique click" size={11} color="#888888" numberOfLines={1} />
+                <Label
+                  text={`$${product.earnPerClick}`}
+                  size={18}
+                  weight="bold"
+                  color="#1A1A1A"
+                />
+                <Label
+                  text="per unique click"
+                  size={11}
+                  color="#888888"
+                  numberOfLines={1}
+                />
               </View>
             </View>
 
@@ -161,8 +150,18 @@ const ProductDetailScreen: React.FC = () => {
             <View style={styles.infoCard}>
               <Image source={images.clock} style={styles.infoCardIcon} />
               <View style={styles.infoCardContent}>
-                <Label text={product.endDate} size={18} weight="bold" color="#1A1A1A" />
-                <Label text="Ending Soon..." size={11} color="#888888" numberOfLines={1} />
+                <Label
+                  text={product.endDate}
+                  size={18}
+                  weight="bold"
+                  color="#1A1A1A"
+                />
+                <Label
+                  text="Ending Soon..."
+                  size={11}
+                  color="#888888"
+                  numberOfLines={1}
+                />
               </View>
             </View>
           </View>
@@ -178,16 +177,34 @@ const ProductDetailScreen: React.FC = () => {
             />
             {TERMS_CONDITIONS.map((term, index) => (
               <View key={index} style={styles.termRow}>
-                <Label text={`${index + 1}.`} size={15} color="#1A88B3" style={styles.termNumber} />
-                <Label text={term} size={15} color="#666666" style={styles.termText} />
+                <Label
+                  text={`${index + 1}.`}
+                  size={15}
+                  color="#1A88B3"
+                  style={styles.termNumber}
+                />
+                <Label
+                  text={term}
+                  size={15}
+                  color="#666666"
+                  style={styles.termText}
+                />
               </View>
             ))}
           </View>
 
           {/* Link Box */}
           <View style={styles.linkBox}>
-            <Label text={product.shareLink} size={16} color="#555555" style={styles.linkText} />
-            <TouchableOpacity onPress={handleCopyLink} style={styles.copyButton}>
+            <Label
+              text={product.shareLink}
+              size={16}
+              color="#555555"
+              style={styles.linkText}
+            />
+            <TouchableOpacity
+              onPress={handleCopyLink}
+              style={styles.copyButton}
+            >
               <Image source={images.copy} style={styles.copyIcon} />
             </TouchableOpacity>
           </View>
@@ -208,48 +225,16 @@ const ProductDetailScreen: React.FC = () => {
               end={{ x: 1, y: 0 }}
               style={styles.goToLinkButton}
             >
-              <Label text="GO TO LINK" size={16} weight="bold" color="#FFFFFF" />
+              <Label
+                text="GO TO LINK"
+                size={16}
+                weight="bold"
+                color="#FFFFFF"
+              />
             </LinearGradient>
           </TouchableOpacity>
         </ScrollView>
-      </View>
-
-      {/* Share Bottom Sheet */}
-      <BottomSheet
-        visible={shareVisible}
-        onClose={() => setShareVisible(false)}
-        title="Short Link Generated!"
-      >
-        <Label
-          text="Your Unique Link Generated! Share It With Your Friends To Earn"
-          size={14}
-          color="#666666"
-          style={styles.shareSubtitle}
-        />
-
-        {/* Share Link Box */}
-        <View style={styles.shareLinkBox}>
-          <Label text={product.shareLink} size={15} color="#555555" style={styles.shareLinkText} />
-          <TouchableOpacity onPress={handleCopyLink}>
-            <Image source={images.copy} style={styles.shareCopyIcon} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Share Options Grid */}
-        <View style={styles.shareOptionsGrid}>
-          {SHARE_OPTIONS.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              style={styles.shareOptionItem}
-              onPress={() => handleShareOption(option.id)}
-            >
-              <View style={[styles.shareOptionIcon, { backgroundColor: option.color }]}>
-                <Text style={styles.shareOptionEmoji}>{option.icon}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </BottomSheet>
+      </WhiteCard>
     </Container>
   );
 };
@@ -289,14 +274,6 @@ const createStyles = (theme: Theme) =>
       width: s(20),
       height: s(20),
       resizeMode: 'contain',
-    },
-    whiteCard: {
-      flex: 1,
-      backgroundColor: '#FFFFFF',
-      borderTopLeftRadius: s(30),
-      borderTopRightRadius: s(30),
-      paddingHorizontal: s(20),
-      paddingTop: s(24),
     },
     scrollContent: {
       paddingBottom: s(30),
@@ -349,10 +326,13 @@ const createStyles = (theme: Theme) =>
       borderRadius: s(8),
     },
     infoCardIcon: {
-      width: s(36),
-      height: s(36),
+      width: s(24),
+      height: s(24),
       resizeMode: 'contain',
       marginRight: s(10),
+      tintColor: '#1A88B3',
+      alignSelf: 'flex-start',
+      marginTop: s(16),
     },
     infoCardContent: {
       flex: 1,
@@ -373,15 +353,15 @@ const createStyles = (theme: Theme) =>
     },
     termText: {
       flex: 1,
-      lineHeight: s(24),
+      lineHeight: s(20),
     },
     linkBox: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: '#FFFFFF',
       borderRadius: s(30),
-      paddingHorizontal: s(24),
-      paddingVertical: s(18),
+      paddingHorizontal: s(16),
+      paddingVertical: s(16),
       marginBottom: s(28),
       borderWidth: 1,
       borderColor: '#D0D0D0',
@@ -402,12 +382,12 @@ const createStyles = (theme: Theme) =>
       marginBottom: s(20),
     },
     priceText: {
-      fontSize: s(32),
+      fontSize: s(24),
       fontFamily: theme.fonts.bold,
       color: '#23C28C',
     },
     perClickText: {
-      fontSize: s(32),
+      fontSize: s(24),
       fontFamily: theme.fonts.bold,
       color: '#1A1A1A',
     },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Container from '../../components/layouts/Container/Container';
@@ -13,6 +13,9 @@ import { AuthStackParamList } from '../../types/navigation';
 import { SignupFormData } from '../../validations/signupSchema';
 import { s } from '../../theme/size';
 import { Theme } from '../../types/theme';
+import IVLogo from '../../components/base/ImageView/IVLogo';
+import IVCircle from '../../components/base/ImageView/IVCircle';
+import { images } from '../../theme/images';
 
 type SignupScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Signup'>;
 
@@ -74,15 +77,8 @@ const SignupScreen: React.FC = () => {
   return (
     <Container style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Text style={styles.backButtonIcon}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Sharely</Text>
+       <IVCircle size={40} src={images.back_white} onPress={() => navigation.goBack()} />
+       <IVLogo />
       </View>
 
       <FormCard
@@ -187,9 +183,8 @@ const createStyles = (theme: Theme) =>
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingTop: s(24),
-      paddingBottom: s(16),
-    },
+      marginBottom: s(10),
+        },
     backButton: {
       padding: s(10),
       backgroundColor: '#FFFFFF',

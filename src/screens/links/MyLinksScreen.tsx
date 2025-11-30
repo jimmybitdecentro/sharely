@@ -16,6 +16,7 @@ import Container from '../../components/layouts/Container/Container';
 import TextCustom from '../../components/base/Label/TextCustom';
 import { useTheme } from '../../hooks/useTheme';
 import { images } from '../../theme/images';
+import WhiteCard from '../../components/common/WhiteCard';
 
 const sampleLinks = [
   {
@@ -94,7 +95,7 @@ export default function MyLinksScreen() {
     <Container>
       <MainHeader />
 
-      <View style={styles.screen}>
+      <WhiteCard>
 
 
         <View style={{
@@ -172,19 +173,12 @@ export default function MyLinksScreen() {
            }}
           showsVerticalScrollIndicator={false}
         />
-      </View>
+      </WhiteCard>
     </Container>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    borderTopLeftRadius: s(16),
-    borderTopRightRadius: s(16),
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: s(16),
-  },
   title: {
     fontSize: s(20),
     fontWeight: '700',

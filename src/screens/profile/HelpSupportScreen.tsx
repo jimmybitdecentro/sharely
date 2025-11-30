@@ -7,6 +7,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import TextCustom from '../../components/base/Label/TextCustom';
 import InputField from '../../components/base/InputField/InputField';
 import Button from '../../components/base/Button/Button';
+import WhiteCard from '../../components/common/WhiteCard';
 import { s } from '../../theme/size';
 
 const HelpSupportScreen: React.FC = () => {
@@ -54,7 +55,7 @@ const HelpSupportScreen: React.FC = () => {
         }}
       />
 
-      <View style={styles.contentContainer}>
+<WhiteCard>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -97,23 +98,13 @@ const HelpSupportScreen: React.FC = () => {
             style={styles.submitButton}
           />
         </ScrollView>
-      </View>
+      </WhiteCard>
     </Container>
   );
 };
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
-    contentContainer: {
-      flex: 1,
-      backgroundColor: '#FFFFFF',
-      borderTopLeftRadius: s(20),
-      borderTopRightRadius: s(20),
-      borderBottomLeftRadius: s(12),
-      borderBottomRightRadius: s(12),
-      padding: s(20),
-      marginTop: s(16),
-    },
     scrollContent: {
       paddingBottom: s(20),
     },
