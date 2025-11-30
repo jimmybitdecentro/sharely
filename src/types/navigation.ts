@@ -33,7 +33,9 @@ export type MainTabParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
-  ProductDetail: {productId: string}; 
+  ProductDetail: {productId: string};
+  Notifications: undefined;
+  HelpSupport: undefined;
 };
 
 export type ProfileStackParamList = {

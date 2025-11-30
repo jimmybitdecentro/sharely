@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
@@ -93,7 +93,7 @@ const LoginScreen: React.FC = () => {
 
   return (
     <Container style={styles.container}>
-      <IVLogo /> 
+      <IVLogo mt={Platform?.OS === "android" ? s(20):0} /> 
       <View style={styles.centerWrapper}>
         <FormCard
           title="Welcome Back!"

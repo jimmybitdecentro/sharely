@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Provider} from 'react-redux';
-import {StatusBar, StyleSheet} from 'react-native';
+import {StatusBar, StyleSheet, Platform} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
@@ -57,8 +57,9 @@ const AppContent: React.FC = () => {
   return (
     <>
       <StatusBar
-        barStyle={themeMode === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={theme.colors.background}
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent={Platform.OS === 'android'}
       />
       <AppNavigator />
       <Toast />

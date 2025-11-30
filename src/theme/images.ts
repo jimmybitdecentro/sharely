@@ -22,4 +22,5 @@ export const images = Object.freeze({
   earn: require("../assets/images/earn.png"),
   link: require("../assets/images/link.png"),
   wallet: require("../assets/images/wallet.png"),
+  shareIcon: require("../assets/images/shareIcon.png"),
 });

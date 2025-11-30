@@ -78,10 +78,11 @@ const ProductDetailScreen: React.FC = () => {
 
   return (
     <Container style={styles.container}>
-     
-<ActionBar title="Product Detail"
- onBackPress={() => navigation.goBack()} 
- />
+      <ActionBar
+        title="Product Detail"
+        onBackPress={() => navigation.goBack()}
+        sharePress
+      />
       <WhiteCard>
         <ScrollView
           showsVerticalScrollIndicator={false}

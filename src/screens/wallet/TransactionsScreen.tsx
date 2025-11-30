@@ -136,7 +136,7 @@ const TransactionsScreen: React.FC = () => {
       />
 
       {/* Transactions Card */}
-      <WhiteCard>
+      <WhiteCard bottomBorderRadius={s(30)}>
         <FlatList
           data={allTransactions}
           keyExtractor={(item) => item.id}

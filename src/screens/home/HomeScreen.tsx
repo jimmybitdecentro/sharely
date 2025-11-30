@@ -120,7 +120,7 @@ export default function HomeScreen() {
             style={styles.dealTitle}
           />
           <TouchableOpacity style={styles.shareBtn}>
-            <Image source={images.share} style={styles.shareIcon} />
+            <Image source={images.shareIcon} style={styles.shareIcon} />
           </TouchableOpacity>
         </View>
 
@@ -342,7 +342,7 @@ const createStyles = (theme: Theme) =>
       marginRight: s(8),
     },
     shareBtn: {
-      padding: s(4),
+      // padding: s(4),
     },
     shareIcon: {
       width: s(18),
