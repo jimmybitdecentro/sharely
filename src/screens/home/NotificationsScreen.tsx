@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, FlatList, TouchableOpacity, Image} from 'react-native';
 import Container from '../../components/layouts/Container/Container';
 import {useTheme} from '../../hooks/useTheme';
 import { ActionBar } from '../../components/common/Headers/ActionBar';
@@ -7,7 +7,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import TextCustom from '../../components/base/Label/TextCustom';
 import WhiteCard from '../../components/common/WhiteCard';
 import { s } from '../../theme/size';
-import Feather from '@react-native-vector-icons/feather';
+import { images } from '../../theme/images';
 
 interface NotificationItem {
   id: string;
@@ -57,31 +57,31 @@ const NotificationsScreen: React.FC = () => {
     switch (type) {
       case 'earnings':
         return {
-          icon: 'dollar-sign',
+          image: images.dollor,
           backgroundColor: '#DCFCE7',
           iconColor: '#047857',
         };
       case 'account':
         return {
-          icon: 'user',
+          image: images.profile,
           backgroundColor: '#DBEAFE',
           iconColor: '#1D4ED8',
         };
       case 'link':
         return {
-          icon: 'link',
+          image: images.link,
           backgroundColor: '#F3E8FF',
           iconColor: '#7E22CE',
         };
       case 'security':
         return {
-          icon: 'alert-circle',
+          image: images.announcement,
           backgroundColor: '#FEE2E2',
           iconColor: '#DC2626',
         };
       default:
         return {
-          icon: 'bell',
+          image: images.notification,
           backgroundColor: '#F3F4F6',
           iconColor: '#6B7280',
         };
@@ -97,10 +97,9 @@ const NotificationsScreen: React.FC = () => {
         ]}
       >
         <View style={[styles.iconContainer, { backgroundColor: iconConfig.backgroundColor }]}>
-          <Feather
-            name={iconConfig.icon as any}
-            size={s(20)}
-            color={iconConfig.iconColor}
+          <Image
+            source={iconConfig.image}
+            style={[styles.notificationIcon, { tintColor: iconConfig.iconColor }]}
           />
         </View>
 
@@ -135,32 +134,31 @@ const NotificationsScreen: React.FC = () => {
   };
 
   return (
-    <Container >
+    <Container style={styles.container}>
       <ActionBar
         title="Notifications"
-        onBackPress={() => {
-          navigation.goBack();
-        }}
+        onBackPress={() => navigation.goBack()}
       />
 
-<WhiteCard>
-          <FlatList
-            data={sampleNotifications}
-            keyExtractor={(item) => item.id}
-            renderItem={renderNotificationItem}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
-        </WhiteCard>
+      <WhiteCard bottomBorderRadius={30}>
+        <FlatList
+          data={sampleNotifications}
+          keyExtractor={(item) => item.id}
+          renderItem={renderNotificationItem}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      </WhiteCard>
     </Container>
   );
 };
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
-    screen: {
-      flex: 1,
-      padding: s(16),
+    container: {
+      paddingHorizontal: s(16),
+      paddingTop: s(16),
+      paddingBottom: 0,
     },
     listContent: {
       paddingBottom: s(20),
@@ -181,6 +179,11 @@ const createStyles = (theme: any) =>
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: s(12),
+    },
+    notificationIcon: {
+      width: s(22),
+      height: s(22),
+      resizeMode: 'contain',
     },
     notificationContent: {
       flex: 1,

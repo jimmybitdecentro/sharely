@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
-import Feather from '@react-native-vector-icons/feather';
 import { images } from '../../../theme/images';
 import { s } from '../../../theme/size';
 import IVLogo from '../../base/ImageView/IVLogo';
@@ -23,23 +22,16 @@ export const MainHeader = ({
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <IVCircle size={40} src={images.notification}
           mr={s(10)}
-          onPress={
-            () => (navigation as any).navigate('Main', { screen: 'HomeStack', params: { screen: 'Notifications' } })
-          }
+          onPress={() => navigation.navigate('NotificationsModal')}
         />
         <IVCircle size={40} src={images.sound}
           mr={s(10)}
-          onPress={
-            () => (navigation as any).navigate('Main', { screen: 'HomeStack', params: { screen: 'HelpSupport' } })
-          }
+          onPress={() => navigation.navigate('HelpSupportModal')}
         />
         <IVCircle size={40} src={images.profile}
           mr={s(10)}
-          onPress={
-            () => navigation.navigate('ProfileModal')
-          }
+          onPress={() => navigation.navigate('ProfileModal')}
         />
-
       </View>
     </View>
   );

@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import Feather from '@react-native-vector-icons/feather';
 import { images } from '../../../theme/images';
 import { s } from '../../../theme/size';
 import IVLogo from '../../base/ImageView/IVLogo';
@@ -81,7 +80,8 @@ const headerStyles = () =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginTop: s(15),
+      marginTop: s(0),
+      paddingBottom: s(10),
     },
     backButtonContainer: {
       width: s(40),

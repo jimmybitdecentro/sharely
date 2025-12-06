@@ -1,174 +1,150 @@
-import React, { useState } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useSelector, useDispatch } from 'react-redux';
-import Feather from '@react-native-vector-icons/feather';
+import {useNavigation} from '@react-navigation/native';
 import Container from '../../components/layouts/Container/Container';
 import FormCard from '../../components/common/FormCard/FormCard';
 import Label from '../../components/base/Label/Label';
 import InputField from '../../components/base/InputField/InputField';
 import Dropdown from '../../components/base/Dropdown/Dropdown';
 import RadioGroup from '../../components/base/RadioButton/RadioGroup';
-import { useTheme } from '../../hooks/useTheme';
-import { Theme } from '../../types/theme';
-import { RootState } from '../../store';
-import { updateUser } from '../../store/slices/authSlice';
-import { s } from '../../theme/size';
+import {useTheme} from '../../hooks/useTheme';
+import {useProfile} from '../../hooks/useProfile';
+import {useGetCountriesQuery, useGetCitiesQuery} from '../../store/api';
+import {Theme} from '../../types/theme';
+import {s} from '../../theme/size';
+import {Gender} from '../../types/auth.types';
+import {images} from '../../theme/images';
+import { ActionBar } from '../../components/common/Headers/ActionBar';
 
-const OCCUPATION_OPTIONS = [
-  { label: 'Software Technology', value: 'software_technology' },
-  { label: 'Healthcare', value: 'healthcare' },
-  { label: 'Education', value: 'education' },
-  { label: 'Finance', value: 'finance' },
-  { label: 'Marketing', value: 'marketing' },
-  { label: 'Design', value: 'design' },
-  { label: 'Other', value: 'other' },
-];
-
-const INTERESTS_OPTIONS = [
-  { label: 'Tech', value: 'tech' },
-  { label: 'Fashion', value: 'fashion' },
-  { label: 'Sports', value: 'sports' },
-  { label: 'Music', value: 'music' },
-  { label: 'Travel', value: 'travel' },
-  { label: 'Food', value: 'food' },
-  { label: 'Gaming', value: 'gaming' },
-];
-
-const AGE_OPTIONS = Array.from({ length: 63 }, (_, i) => ({
+const AGE_OPTIONS = Array.from({length: 63}, (_, i) => ({
   label: String(18 + i),
   value: String(18 + i),
 }));
 
 const GENDER_OPTIONS = [
-  { label: 'Male', value: 'male' },
-  { label: 'Female', value: 'female' },
+  {label: 'Male', value: 'MALE'},
+  {label: 'Female', value: 'FEMALE'},
+  {label: 'Other', value: 'OTHER'},
 ];
-
-const COUNTRY_OPTIONS = [
-  { label: 'India', value: 'india' },
-  { label: 'USA', value: 'usa' },
-  { label: 'UK', value: 'uk' },
-  { label: 'Canada', value: 'canada' },
-  { label: 'Australia', value: 'australia' },
-];
-
-const CITY_OPTIONS: Record<string, { label: string; value: string }[]> = {
-  india: [
-    { label: 'Hyderabad', value: 'hyderabad' },
-    { label: 'Mumbai', value: 'mumbai' },
-    { label: 'Delhi', value: 'delhi' },
-    { label: 'Bangalore', value: 'bangalore' },
-    { label: 'Chennai', value: 'chennai' },
-  ],
-  usa: [
-    { label: 'New York', value: 'new_york' },
-    { label: 'Los Angeles', value: 'los_angeles' },
-    { label: 'Chicago', value: 'chicago' },
-    { label: 'San Francisco', value: 'san_francisco' },
-  ],
-  uk: [
-    { label: 'London', value: 'london' },
-    { label: 'Manchester', value: 'manchester' },
-    { label: 'Birmingham', value: 'birmingham' },
-  ],
-  canada: [
-    { label: 'Toronto', value: 'toronto' },
-    { label: 'Vancouver', value: 'vancouver' },
-    { label: 'Montreal', value: 'montreal' },
-  ],
-  australia: [
-    { label: 'Sydney', value: 'sydney' },
-    { label: 'Melbourne', value: 'melbourne' },
-    { label: 'Brisbane', value: 'brisbane' },
-  ],
-};
-
-// Helper to get label from value
-const getLabelFromValue = (
-  options: { label: string; value: string }[],
-  value: string
-): string => {
-  const option = options.find(opt => opt.value === value);
-  return option?.label || value;
-};
 
 const EditProfileFormScreen: React.FC = () => {
   const navigation = useNavigation();
-  const dispatch = useDispatch();
-  const { theme } = useTheme();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const {theme} = useTheme();
   const styles = createStyles(theme);
 
+  // Profile hook
+  const {
+    user,
+    isUpdating,
+    updateAuthProfile,
+    updateExtendedProfile,
+  } = useProfile();
+
+  // Location data
+  const {data: countries = [], isLoading: isLoadingCountries} = useGetCountriesQuery();
+  const {data: cities = [], isLoading: isLoadingCities} = useGetCitiesQuery();
+
+  // Form state
   const [formData, setFormData] = useState({
-    name: user?.name || 'John Deo',
-    occupation: user?.occupation || 'software_technology',
-    interests: user?.interests || 'tech',
-    age: user?.age || '37',
-    gender: user?.gender || 'male',
-    country: user?.country || 'india',
-    city: user?.city || 'hyderabad',
+    name: '',
+    email: '',
+    age: '',
+    gender: '' as Gender | '',
+    countryId: '',
+    cityId: '',
   });
 
+  // Initialize form with user data
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        age: '',
+        gender: '',
+        countryId: '',
+        cityId: '',
+      });
+    }
+  }, [user]);
+
   const handleFieldChange = (field: string, value: string) => {
-    setFormData(prev => {
-      const newData = { ...prev, [field]: value };
+    setFormData((prev) => {
+      const newData = {...prev, [field]: value};
       // Reset city when country changes
-      if (field === 'country') {
-        newData.city = '';
+      if (field === 'countryId') {
+        newData.cityId = '';
       }
       return newData;
     });
   };
 
-  const handleSaveChanges = () => {
-    // Dispatch update to Redux store - store VALUES (not labels)
-    // Labels will be converted in EditProfileScreen for display
-    dispatch(updateUser({
-      name: formData.name,
-      occupation: formData.occupation,
-      interests: formData.interests,
-      age: formData.age,
-      gender: formData.gender,
-      country: formData.country,
-      city: formData.city,
-    }));
+  const handleSaveChanges = async () => {
+    // Update auth profile (name, email)
+    if (formData.name || formData.email) {
+      await updateAuthProfile({
+        ...(formData.name && {name: formData.name}),
+        ...(formData.email && {email: formData.email}),
+      });
+    }
+
+    // Update extended profile (age, gender, location)
+    const extendedData: any = {};
+    if (formData.age) extendedData.age = parseInt(formData.age, 10);
+    if (formData.gender) extendedData.gender = formData.gender as Gender;
+    if (formData.countryId) extendedData.countryId = formData.countryId;
+    if (formData.cityId) extendedData.cityId = formData.cityId;
+
+    if (Object.keys(extendedData).length > 0) {
+      await updateExtendedProfile(extendedData);
+    }
 
     navigation.goBack();
   };
 
-  const getCityOptions = () => {
-    return CITY_OPTIONS[formData.country] || [];
-  };
+  // Transform countries/cities to dropdown format
+  const countryOptions = countries.map((country) => ({
+    label: country.name,
+    value: country.id,
+  }));
+
+  const cityOptions = cities
+    .filter((city) => !formData.countryId || city.countryId === formData.countryId)
+    .map((city) => ({
+      label: city.name,
+      value: city.id,
+    }));
 
   return (
     <Container style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <ActionBar title="Edit Profile" onBackPress={() => navigation.goBack()} />
+      {/* <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
-          activeOpacity={0.8}
-        >
-          <Feather name="arrow-left" size={s(20)} color="#FFFFFF" />
+          activeOpacity={0.8}>
+          <Image source={images.back_white} style={styles.backIcon} />
         </TouchableOpacity>
         <Label text="Edit Profile" size={20} weight="bold" color="#FFFFFF" />
         <View style={styles.headerPlaceholder} />
-      </View>
+      </View> */}
 
       {/* Form Card */}
       <FormCard
         title=""
-        buttonText="SAVE CHANGES"
+        buttonText={isUpdating ? 'SAVING...' : 'SAVE CHANGES'}
         onSubmit={handleSaveChanges}
         position="belowHeader"
         cardStyle={styles.formCardStyle}
         keyboardBehavior="handled"
-      >
+        isSubmitting={isUpdating}>
         {/* Name Field */}
         <Label
           text="What Should We Call You?"
@@ -182,38 +158,25 @@ const EditProfileFormScreen: React.FC = () => {
           value={formData.name}
           onChangeText={(text) => handleFieldChange('name', text)}
           containerStyle={styles.inputContainer}
+          editable={!isUpdating}
         />
 
-        {/* Occupation Dropdown */}
+        {/* Email Field */}
         <Label
-          text="Choose Your Occupation"
+          text="Your Email"
           size={14}
           color="#1A1A1A"
           weight="medium"
           style={styles.fieldLabel}
         />
-        <Dropdown
-          data={OCCUPATION_OPTIONS}
-          value={formData.occupation}
-          onSelect={(value) => handleFieldChange('occupation', value)}
-          placeholder="Select occupation"
-          style={styles.dropdownContainer}
-        />
-
-        {/* Interests Dropdown */}
-        <Label
-          text="Choose Your Interests"
-          size={14}
-          color="#1A1A1A"
-          weight="medium"
-          style={styles.fieldLabel}
-        />
-        <Dropdown
-          data={INTERESTS_OPTIONS}
-          value={formData.interests}
-          onSelect={(value) => handleFieldChange('interests', value)}
-          placeholder="Select interests"
-          style={styles.dropdownContainer}
+        <InputField
+          placeholder="Enter your email"
+          value={formData.email}
+          onChangeText={(text) => handleFieldChange('email', text)}
+          containerStyle={styles.inputContainer}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          editable={!isUpdating}
         />
 
         {/* Age Dropdown */}
@@ -234,7 +197,7 @@ const EditProfileFormScreen: React.FC = () => {
 
         {/* Gender Radio */}
         <Label
-          text="How Do You Identify Yourself ?"
+          text="How Do You Identify Yourself?"
           size={14}
           color="#1A1A1A"
           weight="medium"
@@ -249,27 +212,39 @@ const EditProfileFormScreen: React.FC = () => {
 
         {/* Location Dropdowns */}
         <Label
-          text="Where Do You Live ?"
+          text="Where Do You Live?"
           size={14}
           color="#1A1A1A"
           weight="medium"
           style={styles.fieldLabel}
         />
         <View style={styles.locationRow}>
-          <Dropdown
-            data={COUNTRY_OPTIONS}
-            value={formData.country}
-            onSelect={(value) => handleFieldChange('country', value)}
-            placeholder="Country"
-            style={styles.halfDropdown}
-          />
-          <Dropdown
-            data={getCityOptions()}
-            value={formData.city}
-            onSelect={(value) => handleFieldChange('city', value)}
-            placeholder="City"
-            style={styles.halfDropdown}
-          />
+          {isLoadingCountries ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#23C28C" />
+            </View>
+          ) : (
+            <Dropdown
+              data={countryOptions}
+              value={formData.countryId}
+              onSelect={(value) => handleFieldChange('countryId', value)}
+              placeholder="Country"
+              style={styles.halfDropdown}
+            />
+          )}
+          {isLoadingCities ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#23C28C" />
+            </View>
+          ) : (
+            <Dropdown
+              data={cityOptions}
+              value={formData.cityId}
+              onSelect={(value) => handleFieldChange('cityId', value)}
+              placeholder="City"
+              style={styles.halfDropdown}
+            />
+          )}
         </View>
       </FormCard>
     </Container>
@@ -297,6 +272,12 @@ const createStyles = (theme: Theme) =>
       backgroundColor: '#23C28C',
       justifyContent: 'center',
       alignItems: 'center',
+    },
+    backIcon: {
+      width: s(20),
+      height: s(20),
+      resizeMode: 'contain',
+      tintColor: '#FFFFFF',
     },
     headerPlaceholder: {
       width: s(44),
@@ -327,7 +308,12 @@ const createStyles = (theme: Theme) =>
       width: '48%',
       marginBottom: 0,
     },
+    loadingContainer: {
+      width: '48%',
+      height: s(50),
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   });
 
 export default EditProfileFormScreen;
-

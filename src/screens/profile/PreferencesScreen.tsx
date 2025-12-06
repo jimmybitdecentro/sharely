@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   Switch,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Feather from '@react-native-vector-icons/feather';
 import Container from '../../components/layouts/Container/Container';
 import FormCard from '../../components/common/FormCard/FormCard';
 import Label from '../../components/base/Label/Label';
@@ -14,16 +13,17 @@ import { useTheme } from '../../hooks/useTheme';
 import { Theme } from '../../types/theme';
 import { s } from '../../theme/size';
 import { ActionBar } from '../../components/common/Headers/ActionBar';
+import { images } from '../../theme/images';
 
 interface PreferenceItem {
   key: string;
   label: string;
-  icon: string;
+  image: any;
 }
 
 const PREFERENCE_ITEMS: PreferenceItem[] = [
-  { key: 'pushNotification', label: 'Push Notification', icon: 'bell' },
-  { key: 'earningUpdates', label: 'Earning Updates', icon: 'mail' },
+  { key: 'pushNotification', label: 'Push Notification', image: images.push },
+  { key: 'earningUpdates', label: 'Earning Updates', image: images.earning },
 ];
 
 const PreferencesScreen: React.FC = () => {
@@ -46,9 +46,7 @@ const PreferencesScreen: React.FC = () => {
   const renderPreferenceItem = (item: PreferenceItem) => (
     <View key={item.key} style={styles.preferenceItem}>
       <View style={styles.preferenceLeft}>
-        <View style={styles.iconContainer}>
-          <Feather name={item.icon} size={s(20)} color="#666666" />
-        </View>
+        <Image source={item.image} style={styles.preferenceIcon} />
         <Label text={item.label} size={15} weight="medium" color="#1A1A1A" />
       </View>
       <Switch
@@ -118,13 +116,10 @@ const createStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
     },
-    iconContainer: {
-      width: s(44),
-      height: s(44),
-      borderRadius: s(22),
-      backgroundColor: '#F5F5F5',
-      justifyContent: 'center',
-      alignItems: 'center',
+    preferenceIcon: {
+      width: s(40),
+      height: s(40),
+      resizeMode: 'contain',
       marginRight: s(14),
     },
   });

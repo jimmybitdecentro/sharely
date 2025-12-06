@@ -2,13 +2,11 @@ import React from 'react';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useSelector } from 'react-redux';
-import Feather from '@react-native-vector-icons/feather';
 import Container from '../../components/layouts/Container/Container';
 import FormCard from '../../components/common/FormCard/FormCard';
 import Label from '../../components/base/Label/Label';
@@ -148,7 +146,7 @@ const EditProfileScreen: React.FC = () => {
           {/* Verified Badge */}
           <View style={styles.verifiedBadge}>
             <View style={styles.verifiedIcon}>
-              <Feather name="check" size={s(12)} color="#FFFFFF" />
+              <Label text="✓" size={12} weight="bold" color="#FFFFFF" />
             </View>
             <Label text="Verified Account" size={14} color="#23C28C" weight="medium" />
           </View>

@@ -1,55 +1,80 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   Image,
   Share,
-  Alert,
+  ActivityIndicator,
+  ScrollView,
+  RefreshControl,
+  Clipboard,
+  Platform,
 } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
-import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
-import Feather from '@react-native-vector-icons/feather';
+import {useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
+import Toast from 'react-native-toast-message';
 import Container from '../../components/layouts/Container/Container';
-import FormCard from '../../components/common/FormCard/FormCard';
 import Label from '../../components/base/Label/Label';
-import { useTheme } from '../../hooks/useTheme';
-import { Theme } from '../../types/theme';
-import { RootState } from '../../store';
-import { s } from '../../theme/size';
-import { images } from '../../theme/images';
-import { ActionBar } from '../../components/common/Headers/ActionBar';
+import InputField from '../../components/base/InputField/InputField';
+import {useTheme} from '../../hooks/useTheme';
+import {useReferral} from '../../hooks/useReferral';
+import {Theme} from '../../types/theme';
+import {s} from '../../theme/size';
+import {images} from '../../theme/images';
+import {ActionBar} from '../../components/common/Headers/ActionBar';
+import WhiteCard from '../../components/common/WhiteCard';
 
 const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
 
+// Generate QR code URL using a free API
+const getQRCodeUrl = (data: string, size: number = 200) => {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=1A88B3&bgcolor=FFFFFF`;
+};
+
 const ReferralScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { theme } = useTheme();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const {theme} = useTheme();
   const styles = createStyles(theme);
 
-  const referralLink = `Https://Solosfi.Com/Invite/${user?.name?.replace(' ', '-') || 'John-Do'} 23`;
-  const totalReferrals = 6;
-  const acceptedCount = 3;
-  const [qrCodeUri, setQrCodeUri] = useState<string>('');
+  // Referral data
+  const {
+    myReferralCode,
+    totalReferrals,
+    totalEarnedFromReferrals,
+    referralsGiven,
+    hasBeenReferred,
+    referralReceived,
+    isLoading,
+    isApplying,
+    error,
+    refetch,
+    applyReferralCode,
+  } = useReferral();
 
- 
-  const handleCopyLink = async () => {
-    try {
-      await Share.share({
-        message: referralLink,
-      });
-    } catch (error) {
-      Alert.alert('Link', referralLink);
+  const [inputReferralCode, setInputReferralCode] = useState('');
+
+  const referralLink = myReferralCode
+    ? `https://sharely.app/invite/${myReferralCode}`
+    : '';
+
+  const handleCopyLink = () => {
+    if (!referralLink) return;
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+      Clipboard.setString(referralLink);
     }
+    Toast.show({
+      type: 'success',
+      text1: 'Copied!',
+      text2: 'Referral link copied to clipboard',
+    });
   };
 
   const handleShareLink = async () => {
+    if (!referralLink) return;
     try {
       await Share.share({
-        message: `Join me on Sharely! Use my referral link: ${referralLink}`,
+        message: `Join me on Sharely! Use my referral code: ${myReferralCode}\n\n${referralLink}`,
         title: 'Share Referral Link',
       });
     } catch (error) {
@@ -57,19 +82,34 @@ const ReferralScreen: React.FC = () => {
     }
   };
 
+  const acceptedCount = referralsGiven.length;
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Container style={styles.container}>
+        <ActionBar title="Referral" onBackPress={() => navigation.goBack()} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#23C28C" />
+          <Label
+            text="Loading referral info..."
+            size={14}
+            color="#888888"
+            style={{marginTop: s(10)}}
+          />
+        </View>
+      </Container>
+    );
+  }
+
   return (
     <Container style={styles.container}>
-    <ActionBar title="Referral" onBackPress={() => navigation.goBack()} />
-      <View style={styles.avatarSection}>
+      <ActionBar title="Referral" onBackPress={() => navigation.goBack()} />
+
+      {/* Header Section with Avatar */}
+      <View style={styles.headerSection}>
         <View style={styles.avatarContainer}>
-          <Image
-            source={
-              user?.profilePicture
-                ? { uri: user.profilePicture }
-                : images.profile
-            }
-            style={styles.avatar}
-          />
+          <Image source={images.profile} style={styles.avatar} />
         </View>
         <Label
           text={`${totalReferrals} Invites - ${acceptedCount} Joined`}
@@ -80,80 +120,113 @@ const ReferralScreen: React.FC = () => {
         />
       </View>
 
-      {/* Content Card */}
-      <FormCard
-        title=""
-        buttonText="SHARE LINK"
-        onSubmit={handleShareLink}
-        position="belowHeader"
-        cardStyle={styles.formCardStyle}
-      >
-        {/* QR Code Section */}
-        <View style={styles.qrSection}>
-          <LinearGradient
-            colors={GRADIENT_COLORS}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.qrGradientBorder}
-          >
-            <View style={styles.qrInner}>
-              <View style={styles.qrPlaceholder}>
-               <QRCode value={"ghfhgf"} size={s(180)} />
+      {/* White Card Content */}
+      <WhiteCard>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refetch}
+              colors={['#23C28C']}
+              tintColor="#23C28C"
+            />
+          }>
+          {/* QR Code Section */}
+          {myReferralCode && referralLink && (
+            <View style={styles.qrSection}>
+              <LinearGradient
+                colors={GRADIENT_COLORS}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 1}}
+                style={styles.qrGradientBorder}>
+                <View style={styles.qrInner}>
+                  <Image
+                    source={{uri: getQRCodeUrl(referralLink, 220)}}
+                    style={styles.qrImage}
+                    resizeMode="contain"
+                  />
+                </View>
+              </LinearGradient>
+              <Label
+                text="Scan QR code to invite"
+                size={14}
+                color="#666666"
+                style={styles.qrLabel}
+              />
+            </View>
+          )}
+
+          {/* Stats Row */}
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Image source={images.referral} style={styles.statIcon} />
+              <View style={styles.statTextContainer}>
+                <Label
+                  text={String(totalReferrals).padStart(2, '0')}
+                  size={22}
+                  weight="bold"
+                  color="#1A1A1A"
+                />
+                <Label text="Total Referrals" size={11} color="#888888" />
               </View>
             </View>
-          </LinearGradient>
-          <Label
-            text="Scan QR code to invite"
-            size={14}
-            color="#666666"
-            style={styles.qrLabel}
-          />
-        </View>
 
-        {/* Stats Row */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <View style={styles.statIconContainer}>
-              <Feather name="user-plus" size={s(18)} color="#666666" />
-            </View>
-            <View>
-              <Label text={String(totalReferrals).padStart(2, '0')} size={20} weight="bold" color="#1A1A1A" />
-              <Label text="Total Referrals" size={12} color="#888888" />
+            <View style={styles.statCard}>
+              <View style={styles.checkIconContainer}>
+                <Label text="✓" size={14} weight="bold" color="#23C28C" />
+              </View>
+              <View style={styles.statTextContainer}>
+                <Label
+                  text={String(acceptedCount).padStart(2, '0')}
+                  size={22}
+                  weight="bold"
+                  color="#1A1A1A"
+                />
+                <Label text="Accepted Count" size={11} color="#888888" />
+              </View>
             </View>
           </View>
 
-          <View style={styles.statCard}>
-            <View style={styles.statIconContainer}>
-              <Feather name="check-circle" size={s(18)} color="#666666" />
-            </View>
-            <View>
-              <Label text={String(acceptedCount).padStart(2, '0')} size={20} weight="bold" color="#1A1A1A" />
-              <Label text="Accepted Count" size={12} color="#888888" />
+          {/* Referral Link Section */}
+          <View style={styles.sectionContainer}>
+            <Label
+              text="Your Referral Link"
+              size={15}
+              weight="semiBold"
+              color="#1A1A1A"
+              style={styles.sectionTitle}
+            />
+            <View style={styles.linkContainer}>
+              <Label
+                text={referralLink || 'Loading...'}
+                size={14}
+                color="#666666"
+                style={styles.linkText}
+                numberOfLines={1}
+              />
+              <TouchableOpacity onPress={handleCopyLink} activeOpacity={0.7}>
+                <Image source={images.copy} style={styles.copyIcon} />
+              </TouchableOpacity>
             </View>
           </View>
-        </View>
 
-        {/* Referral Link Section */}
-        <Label
-          text="Your Referral Link"
-          size={16}
-          weight="bold"
-          color="#1A1A1A"
-          style={styles.linkTitle}
-        />
-        <View style={styles.linkContainer}>
-          <Label
-            text={referralLink}
-            size={14}
-            color="#666666"
-            style={styles.linkText}
-            numberOfLines={1}
-          />
-          <TouchableOpacity onPress={handleCopyLink} activeOpacity={0.7}>
-            <Feather name="copy" size={s(20)} color="#666666" />
+          {/* Share Button */}
+          <TouchableOpacity
+            onPress={handleShareLink}
+            activeOpacity={0.8}
+            style={styles.shareButtonContainer}>
+            <LinearGradient
+              colors={GRADIENT_COLORS}
+              start={{x: 0, y: 0}}
+              end={{x: 1, y: 0}}
+              style={styles.shareButton}>
+              <Label text="SHARE LINK" size={16} weight="bold" color="#FFFFFF" />
+            </LinearGradient>
           </TouchableOpacity>
-        </View>
-      </FormCard>
+        </ScrollView>
+      </WhiteCard>
     </Container>
   );
 };
@@ -165,68 +238,50 @@ const createStyles = (theme: Theme) =>
       paddingTop: s(16),
       paddingBottom: 0,
     },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingTop: s(40),
-      paddingBottom: s(16),
-    },
-    backButton: {
-      width: s(44),
-      height: s(44),
-      borderRadius: s(22),
-      backgroundColor: '#23C28C',
+    loadingContainer: {
+      flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
     },
-    headerPlaceholder: {
-      width: s(44),
-    },
-    avatarSection: {
+    headerSection: {
       alignItems: 'center',
-      paddingVertical: s(16),
+      paddingVertical: s(20),
     },
     avatarContainer: {
-      width: s(80),
-      height: s(80),
-      borderRadius: s(40),
-      backgroundColor: '#4A90D9',
+      width: s(90),
+      height: s(90),
+      borderRadius: s(45),
+      backgroundColor: '#6BA3D6',
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      borderWidth: 3,
+      borderColor: 'rgba(255,255,255,0.3)',
     },
     avatar: {
-      width: s(80),
-      height: s(80),
-      borderRadius: s(40),
+      width: s(90),
+      height: s(90),
+      borderRadius: s(45),
     },
     inviteText: {
-      marginTop: s(12),
+      marginTop: s(14),
     },
-    formCardStyle: {
-      marginTop: s(8),
-      marginBottom: s(30),
-      overflow: 'hidden',
+    scrollContent: {
+      paddingBottom: s(30),
     },
     qrSection: {
       alignItems: 'center',
       marginBottom: s(24),
+      marginTop: s(8),
     },
     qrGradientBorder: {
       padding: s(4),
-      borderRadius: s(16),
+      borderRadius: s(20),
     },
     qrInner: {
       backgroundColor: '#FFFFFF',
-      borderRadius: s(12),
+      borderRadius: s(16),
       padding: s(16),
-    },
-    qrPlaceholder: {
-      width: s(180),
-      height: s(180),
-      justifyContent: 'center',
-      alignItems: 'center',
     },
     qrImage: {
       width: s(180),
@@ -238,29 +293,47 @@ const createStyles = (theme: Theme) =>
     statsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: s(24),
+      marginBottom: s(28),
+      paddingHorizontal: s(8),
     },
     statCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#F8F8F8',
+      backgroundColor: '#FFFFFF',
       borderRadius: s(12),
       paddingVertical: s(14),
-      paddingHorizontal: s(16),
-      width: '48%',
+      paddingHorizontal: s(14),
+      width: '47%',
       borderWidth: 1,
       borderColor: '#EEEEEE',
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
     },
-    statIconContainer: {
+    statIcon: {
+      width: s(36),
+      height: s(36),
+      resizeMode: 'contain',
+      marginRight: s(10),
+    },
+    checkIconContainer: {
       width: s(36),
       height: s(36),
       borderRadius: s(18),
-      backgroundColor: '#EEEEEE',
+      backgroundColor: '#E8F5E9',
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: s(10),
     },
-    linkTitle: {
+    statTextContainer: {
+      flex: 1,
+    },
+    sectionContainer: {
+      marginBottom: s(24),
+    },
+    sectionTitle: {
       marginBottom: s(12),
     },
     linkContainer: {
@@ -270,16 +343,29 @@ const createStyles = (theme: Theme) =>
       backgroundColor: '#FFFFFF',
       borderRadius: s(30),
       borderWidth: 1,
-      borderColor: '#E0E0E0',
-      paddingVertical: s(14),
+      borderColor: '#E5E5E5',
+      paddingVertical: s(16),
       paddingHorizontal: s(20),
-      marginBottom: s(24),
     },
     linkText: {
       flex: 1,
       marginRight: s(10),
     },
+    copyIcon: {
+      width: s(22),
+      height: s(22),
+      resizeMode: 'contain',
+      tintColor: '#888888',
+    },
+    shareButtonContainer: {
+      marginTop: s(8),
+    },
+    shareButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: s(56),
+      borderRadius: s(28),
+    },
   });
 
 export default ReferralScreen;
-

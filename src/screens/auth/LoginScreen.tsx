@@ -1,18 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import {View, Text, StyleSheet, TouchableOpacity, Platform} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import Container from '../../components/layouts/Container/Container';
 import FormCard from '../../components/common/FormCard/FormCard';
 import InputField from '../../components/base/InputField/InputField';
-import { useTheme } from '../../hooks/useTheme';
-import { useLoginForm } from '../../hooks/useLoginForm';
-import { AuthStackParamList } from '../../types/navigation';
-import { LoginFormData } from '../../validations/loginSchema';
-import { Theme } from '../../types/theme';
-import { s } from '../../theme/size';
+import {useTheme} from '../../hooks/useTheme';
+import {useLoginForm} from '../../hooks/useLoginForm';
+import {useAuth} from '../../hooks/useAuth';
+import {AuthStackParamList} from '../../types/navigation';
+import {LoginFormData} from '../../validations/loginSchema';
+import {Theme} from '../../types/theme';
+import {s} from '../../theme/size';
 import IVLogo from '../../components/base/ImageView/IVLogo';
 
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
@@ -21,8 +22,9 @@ const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const { theme } = useTheme();
+  const {theme} = useTheme();
   const styles = createStyles(theme);
+  const {sendOTP, isLoading: isAuthLoading} = useAuth();
 
   const {
     formData,
@@ -35,17 +37,15 @@ const LoginScreen: React.FC = () => {
 
   // Handles OTP request after validation - navigates to OTP screen
   const handleSendOtp = async (data: LoginFormData) => {
-    console.log('Send OTP for:', data.email);
-    await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+    const result = await sendOTP({email: data.email});
     
-    // TODO: Call your send OTP API here
-    // await apiService.sendOtp(data.email);
-    
-    // Navigate to OTP verification screen
-    navigation.navigate('OtpVerification', { 
-      email: data.email, 
-      referral: data.referral || undefined 
-    });
+    if (result.success) {
+      // Navigate to OTP verification screen
+      navigation.navigate('OtpVerification', {
+        email: data.email,
+        referral: data.referral || undefined,
+      });
+    }
   };
 
   const onFormSubmit = () => {
@@ -53,13 +53,13 @@ const LoginScreen: React.FC = () => {
   };
 
   // Gradient text component for "Sharely" logo
-  const GradientText = ({ text, style }: { text: string; style?: any }) => (
+  const GradientText = ({text, style}: {text: string; style?: any}) => (
     <MaskedView maskElement={<Text style={[styles.logoText, style]}>{text}</Text>}>
       <LinearGradient
         colors={GRADIENT_COLORS}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}>
-        <Text style={[styles.logoText, style, { opacity: 0 }]}>{text}</Text>
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 0}}>
+        <Text style={[styles.logoText, style, {opacity: 0}]}>{text}</Text>
       </LinearGradient>
     </MaskedView>
   );
@@ -73,7 +73,7 @@ const LoginScreen: React.FC = () => {
           <Text style={styles.termsLink}>Terms & Conditions</Text>
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>Don't have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
@@ -84,16 +84,18 @@ const LoginScreen: React.FC = () => {
   );
 
   // Label with optional tag
-  const FieldLabel = ({ label, optional }: { label: string; optional?: boolean }) => (
+  const FieldLabel = ({label, optional}: {label: string; optional?: boolean}) => (
     <View style={styles.labelContainer}>
       <Text style={styles.fieldLabel}>{label}</Text>
       {optional && <Text style={styles.optionalTag}>(Optional)</Text>}
     </View>
   );
 
+  const isButtonLoading = isSubmitting || isAuthLoading;
+
   return (
     <Container style={styles.container}>
-      <IVLogo mt={Platform?.OS === "android" ? s(20):0} /> 
+      <IVLogo mt={Platform?.OS === 'android' ? s(20) : 0} />
       <View style={styles.centerWrapper}>
         <FormCard
           title="Welcome Back!"
@@ -101,7 +103,7 @@ const LoginScreen: React.FC = () => {
           position="center"
           buttonText="SEND OTP"
           onSubmit={onFormSubmit}
-          isSubmitting={isSubmitting}
+          isSubmitting={isButtonLoading}
           footerComponent={<TermsFooter />}
           renderContent={() => (
             <>
@@ -117,6 +119,7 @@ const LoginScreen: React.FC = () => {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  editable={!isButtonLoading}
                 />
               </View>
 
@@ -129,6 +132,7 @@ const LoginScreen: React.FC = () => {
                   onChangeText={(text) => handleInputChange('referral', text)}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  editable={!isButtonLoading}
                 />
               </View>
             </>

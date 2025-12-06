@@ -19,8 +19,23 @@ export const images = Object.freeze({
   back_white: require("../assets/images/back_white.png"),
   dollor: require("../assets/images/dollor.png"),
   copy: require("../assets/images/clipboard.png"),
+  clipboard: require("../assets/images/clipboard.png"),
   earn: require("../assets/images/earn.png"),
   link: require("../assets/images/link.png"),
   wallet: require("../assets/images/wallet.png"),
   shareIcon: require("../assets/images/shareIcon.png"),
+  // Profile menu icons
+  editProfile: require("../assets/images/editProfile.png"),
+  paymentMethod: require("../assets/images/paymentMethod.png"),
+  preferences: require("../assets/images/preferences.png"),
+  referral: require("../assets/images/referral.png"),
+  help: require("../assets/images/help.png"),
+  transaction: require("../assets/images/transaction.png"),
+  logout: require("../assets/images/logout.png"),
+  rightArrow: require("../assets/images/rightArrow.png"),
+  allBg: require("../assets/images/allBg.png"),
+  splashBg: require("../assets/images/splashBg.png"),
+  // Preferences icons
+  push: require("../assets/images/push.png"),
+  earning: require("../assets/images/earning.png"),
 });
