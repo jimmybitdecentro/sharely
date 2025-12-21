@@ -2,6 +2,7 @@ import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {apiService} from '../../services/api/apiService';
 import {storageService} from '../../services/storage/storageService';
 import {getErrorMessage} from '../../services/api/errorHandler';
+import {googleAuthService} from '../../services/auth/googleAuthService';
 import {
   AuthState,
   UserProfile,
@@ -98,6 +99,50 @@ export const updateProfile = createAsyncThunk<
   }
 });
 
+// Google Sign-In (no backend)
+export const googleSignIn = createAsyncThunk<
+  {user: UserProfile; firebaseIdToken: string},
+  void,
+  {rejectValue: string}
+>('auth/googleSignIn', async (_, {rejectWithValue}) => {
+  try {
+    // Sign in with Google and Firebase
+    const firebaseAuthResult = await googleAuthService.signIn();
+
+    // Store Firebase tokens
+    await storageService.setFirebaseIdToken(firebaseAuthResult.firebaseIdToken);
+    await storageService.setFirebaseUid(firebaseAuthResult.firebaseUid);
+
+    // Create user profile from Firebase user data
+    const user: UserProfile = {
+      id: firebaseAuthResult.firebaseUid,
+      phoneNumber: null,
+      name: firebaseAuthResult.userInfo.name,
+      email: firebaseAuthResult.userInfo.email,
+      role: 'USER',
+      referralCode: '', // Generate or leave empty
+      firebaseUid: firebaseAuthResult.firebaseUid,
+      profileImage: firebaseAuthResult.userInfo.profileImage,
+    };
+
+    // Store user data
+    await storageService.setUserData(user);
+
+    return {
+      user,
+      firebaseIdToken: firebaseAuthResult.firebaseIdToken,
+    };
+  } catch (error) {
+    // Sign out from Google/Firebase on error
+    try {
+      await googleAuthService.signOut();
+    } catch (signOutError) {
+      console.error('Error signing out after failed Google auth:', signOutError);
+    }
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
 // Restore session (check for existing tokens on app start)
 export const restoreSession = createAsyncThunk<
   {user: UserProfile; accessToken: string; refreshToken: string; expiresAt: number} | null,
@@ -105,6 +150,27 @@ export const restoreSession = createAsyncThunk<
   {rejectValue: string}
 >('auth/restoreSession', async (_, {rejectWithValue}) => {
   try {
+    // First check Firebase auth state
+    const firebaseUser = googleAuthService.getCurrentFirebaseUser();
+    if (firebaseUser) {
+      // User is signed in to Firebase, get fresh token
+      const firebaseIdToken = await googleAuthService.getFirebaseIdToken();
+      if (firebaseIdToken) {
+        const storedUser = await storageService.getUserData();
+        if (storedUser) {
+          // Refresh Firebase token
+          await storageService.setFirebaseIdToken(firebaseIdToken);
+          return {
+            user: storedUser,
+            accessToken: firebaseIdToken, // Use Firebase token as access token
+            refreshToken: '', // No refresh token for Firebase
+            expiresAt: Date.now() + 3600 * 1000, // Firebase tokens last ~1 hour
+          };
+        }
+      }
+    }
+
+    // Fallback to backend tokens if available
     const tokens = await storageService.getTokens();
     
     if (!tokens.accessToken || !tokens.refreshToken) {
@@ -144,6 +210,15 @@ export const logoutAsync = createAsyncThunk<void, void, {rejectValue: string}>(
   'auth/logoutAsync',
   async (_, {rejectWithValue}) => {
     try {
+      // Sign out from Google/Firebase
+      try {
+        await googleAuthService.signOut();
+      } catch (error) {
+        console.warn('Error signing out from Google:', error);
+        // Continue with clearing local data even if Google sign-out fails
+      }
+      
+      // Clear all auth data
       await storageService.clearAuthData();
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
@@ -281,6 +356,25 @@ const authSlice = createSlice({
       .addCase(restoreSession.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || 'Failed to restore session';
+      });
+
+    // Google Sign-In
+    builder
+      .addCase(googleSignIn.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(googleSignIn.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.accessToken = action.payload.firebaseIdToken; // Use Firebase token as access token
+        state.refreshToken = null; // No refresh token for Firebase
+        state.tokenExpiresAt = Date.now() + 3600 * 1000; // Firebase tokens last ~1 hour
+        state.user = action.payload.user;
+      })
+      .addCase(googleSignIn.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Failed to sign in with Google';
       });
 
     // Logout Async

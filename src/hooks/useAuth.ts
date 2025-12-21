@@ -3,6 +3,7 @@ import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {
   sendOTP,
   verifyOTP,
+  googleSignIn,
   fetchProfile,
   updateProfile,
   restoreSession,
@@ -44,6 +45,41 @@ export const useAuth = () => {
       } catch (err) {
         const errorMessage = typeof err === 'string' ? err : 'Failed to verify OTP';
         dispatch(showErrorToast({title: 'Error', message: errorMessage}));
+        return {success: false, error: errorMessage};
+      }
+    },
+    [dispatch],
+  );
+
+  // Sign in with Google
+  const handleSignInWithGoogle = useCallback(
+    async () => {
+      try {
+        const result = await dispatch(googleSignIn()).unwrap();
+        dispatch(showSuccessToast({title: 'Success', message: 'Welcome to Sharely!'}));
+        return {success: true, data: result};
+      } catch (err: any) {
+        let errorMessage = 'Failed to sign in with Google';
+        
+        if (typeof err === 'string') {
+          errorMessage = err;
+        } else if (err?.message) {
+          errorMessage = err.message;
+        }
+
+        // Provide more helpful error messages
+        if (errorMessage.includes('cancelled')) {
+          errorMessage = 'Sign-in was cancelled';
+        } else if (errorMessage.includes('PLAY_SERVICES')) {
+          errorMessage = 'Google Play Services not available. Please update Google Play Services.';
+        } else if (errorMessage.includes('network') || errorMessage.includes('NETWORK')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        } else if (errorMessage.includes('10') || errorMessage.includes('DEVELOPER_ERROR')) {
+          errorMessage = 'Configuration error. Please ensure SHA-1 fingerprint is added to Firebase Console.';
+        }
+
+        console.error('Google sign-in error:', err);
+        dispatch(showErrorToast({title: 'Sign-In Error', message: errorMessage}));
         return {success: false, error: errorMessage};
       }
     },
@@ -114,6 +150,7 @@ export const useAuth = () => {
     // Actions
     sendOTP: handleSendOTP,
     verifyOTP: handleVerifyOTP,
+    signInWithGoogle: handleSignInWithGoogle,
     fetchProfile: handleFetchProfile,
     updateProfile: handleUpdateProfile,
     restoreSession: handleRestoreSession,

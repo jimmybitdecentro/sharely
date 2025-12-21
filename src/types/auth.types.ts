@@ -12,6 +12,8 @@ export interface UserProfile {
   email: string | null;
   role: UserRole;
   referralCode: string;
+  firebaseUid?: string | null;
+  profileImage?: string | null;
 }
 
 // Extended User Profile (with additional fields)
@@ -103,4 +105,15 @@ export interface TokenData {
   refreshToken: string;
   expiresIn: number;
   refreshExpiresIn: number;
+}
+
+// Firebase Auth Result (no backend)
+export interface FirebaseAuthResult {
+  firebaseUid: string;
+  firebaseIdToken: string;
+  userInfo: {
+    name: string | null;
+    email: string | null;
+    profileImage: string | null;
+  };
 }

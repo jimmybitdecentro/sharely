@@ -11,6 +11,7 @@ import ErrorBoundary from './src/components/common/ErrorBoundary/ErrorBoundary';
 import {storageService} from './src/services/storage/storageService';
 import {restoreSession} from './src/store/slices/authSlice';
 import {setTheme} from './src/store/slices/themeSlice';
+import {googleAuthService} from './src/services/auth/googleAuthService';
 import i18n from './src/i18n';
 
 const AppContent: React.FC = () => {
@@ -21,6 +22,14 @@ const AppContent: React.FC = () => {
     // Initialize app - load saved auth and theme
     const initializeApp = async () => {
       try {
+        // Initialize Google Sign-In
+        try {
+          await googleAuthService.initialize();
+        } catch (error) {
+          console.warn('Failed to initialize Google Sign-In:', error);
+          // Continue even if Google Sign-In initialization fails
+        }
+
         // Load saved theme
         const savedTheme = await storageService.getTheme();
         if (savedTheme) {
@@ -33,7 +42,7 @@ const AppContent: React.FC = () => {
           await i18n.changeLanguage(savedLanguage);
         }
 
-        // Restore auth session (checks tokens and validates with server)
+        // Restore auth session (checks Firebase auth state or backend tokens)
         await dispatch(restoreSession());
       } catch (error) {
         console.error('Error initializing app:', error);

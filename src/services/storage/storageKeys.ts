@@ -4,6 +4,10 @@ export const STORAGE_KEYS = {
   REFRESH_TOKEN: '@sharely:refresh_token',
   TOKEN_EXPIRES_AT: '@sharely:token_expires_at',
   
+  // Firebase auth
+  FIREBASE_ID_TOKEN: '@sharely:firebase_id_token',
+  FIREBASE_UID: '@sharely:firebase_uid',
+  
   // User data
   USER_DATA: '@sharely:user_data',
   

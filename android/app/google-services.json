@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "778782615742",
+    "project_id": "sharely-5e764",
+    "storage_bucket": "sharely-5e764.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778782615742:android:986a34d19bf82036a616ef",
+        "android_client_info": {
+          "package_name": "com.share"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "778782615742-5t9gdvjfmhvh51eiq7557s16dn1dbf0a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.share",
+            "certificate_hash": "c62f76075b7462703e0ddb8e0463e3c6e06bc639"
+          }
+        },
+        {
+          "client_id": "778782615742-lakpqvh70iaciqu9tk0snqv206cuaebt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBR1gO_dLSRpj0xVLEb3u06A3jy6Q50Ml8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "778782615742-lakpqvh70iaciqu9tk0snqv206cuaebt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

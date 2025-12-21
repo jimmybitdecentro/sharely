@@ -160,11 +160,39 @@ class StorageService {
     return value ?? false;
   }
 
+  // Firebase ID token methods
+  async setFirebaseIdToken(token: string): Promise<void> {
+    return this.setItem(STORAGE_KEYS.FIREBASE_ID_TOKEN, token);
+  }
+
+  async getFirebaseIdToken(): Promise<string | null> {
+    return this.getItem<string>(STORAGE_KEYS.FIREBASE_ID_TOKEN);
+  }
+
+  async removeFirebaseIdToken(): Promise<void> {
+    return this.removeItem(STORAGE_KEYS.FIREBASE_ID_TOKEN);
+  }
+
+  // Firebase UID methods
+  async setFirebaseUid(uid: string): Promise<void> {
+    return this.setItem(STORAGE_KEYS.FIREBASE_UID, uid);
+  }
+
+  async getFirebaseUid(): Promise<string | null> {
+    return this.getItem<string>(STORAGE_KEYS.FIREBASE_UID);
+  }
+
+  async removeFirebaseUid(): Promise<void> {
+    return this.removeItem(STORAGE_KEYS.FIREBASE_UID);
+  }
+
   // Clear all auth data (for logout)
   async clearAuthData(): Promise<void> {
     await Promise.all([
       this.clearTokens(),
       this.removeUserData(),
+      this.removeFirebaseIdToken(),
+      this.removeFirebaseUid(),
     ]);
   }
 }

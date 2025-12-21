@@ -1,5 +1,5 @@
-import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, Platform} from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,7 +24,8 @@ const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const {theme} = useTheme();
   const styles = createStyles(theme);
-  const {sendOTP, isLoading: isAuthLoading} = useAuth();
+  const {sendOTP, signInWithGoogle, isLoading: isAuthLoading} = useAuth();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const {
     formData,
@@ -50,6 +51,26 @@ const LoginScreen: React.FC = () => {
 
   const onFormSubmit = () => {
     handleSubmit(handleSendOtp);
+  };
+
+  // Handle Google Sign-In
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const result = await signInWithGoogle();
+      if (result.success) {
+        // Navigation will be handled automatically by the auth state change
+        // The AppNavigator will detect isAuthenticated = true and show Main screen
+      } else if (result.error) {
+        // Error is already shown via toast in useAuth hook
+        console.error('Google sign-in failed:', result.error);
+      }
+    } catch (error: any) {
+      console.error('Google sign-in error:', error);
+      // Additional error handling if needed
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   // Gradient text component for "Sharely" logo
@@ -88,6 +109,32 @@ const LoginScreen: React.FC = () => {
     <View style={styles.labelContainer}>
       <Text style={styles.fieldLabel}>{label}</Text>
       {optional && <Text style={styles.optionalTag}>(Optional)</Text>}
+    </View>
+  );
+
+  // Google Sign-In Button Component
+  const GoogleSignInButton = () => (
+    <TouchableOpacity
+      style={styles.googleButton}
+      onPress={handleGoogleSignIn}
+      disabled={isGoogleLoading || isButtonLoading}
+      activeOpacity={0.8}>
+      <View style={styles.googleButtonContent}>
+        {isGoogleLoading ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <Text style={styles.googleButtonText}>Continue with Google</Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
+  // Divider Component
+  const Divider = () => (
+    <View style={styles.dividerContainer}>
+      <View style={styles.dividerLine} />
+      <Text style={styles.dividerText}>OR</Text>
+      <View style={styles.dividerLine} />
     </View>
   );
 
@@ -135,6 +182,12 @@ const LoginScreen: React.FC = () => {
                   editable={!isButtonLoading}
                 />
               </View>
+
+              {/* Divider */}
+              <Divider />
+
+              {/* Google Sign-In Button */}
+              <GoogleSignInButton />
             </>
           )}
         />
@@ -214,6 +267,43 @@ const createStyles = (theme: Theme) =>
       fontSize: s(14),
       fontFamily: theme.fonts.semiBold,
       color: '#23C28C',
+    },
+    dividerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: theme.spacing.md,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: '#E0E0E0',
+    },
+    dividerText: {
+      marginHorizontal: theme.spacing.md,
+      fontSize: s(14),
+      fontFamily: theme.fonts.regular,
+      color: theme.colors.textSecondary,
+    },
+    googleButton: {
+      width: '100%',
+      height: s(50),
+      borderRadius: s(25),
+      backgroundColor: '#4285F4',
+      overflow: 'hidden',
+      marginTop: theme.spacing.sm,
+    },
+    googleButtonContent: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.md,
+    },
+    googleButtonText: {
+      fontSize: s(16),
+      fontFamily: theme.fonts.semiBold,
+      color: '#FFFFFF',
+      fontWeight: '600',
     },
   });
 

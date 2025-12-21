@@ -109,12 +109,12 @@ export interface AdvertisementListResponse {
   success: boolean;
   data: {
     data: Advertisement[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
   };
 }
 
