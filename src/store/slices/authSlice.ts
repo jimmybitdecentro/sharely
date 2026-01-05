@@ -1,8 +1,8 @@
-import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
-import {apiService} from '../../services/api/apiService';
-import {storageService} from '../../services/storage/storageService';
-import {getErrorMessage} from '../../services/api/errorHandler';
-import {googleAuthService} from '../../services/auth/googleAuthService';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { apiService } from '../../services/api/apiService';
+import { storageService } from '../../services/storage/storageService';
+import { getErrorMessage } from '../../services/api/errorHandler';
+import { googleAuthService } from '../../services/auth/googleAuthService';
 import {
   AuthState,
   UserProfile,
@@ -29,8 +29,8 @@ const initialState: AuthState = {
 export const sendOTP = createAsyncThunk<
   void,
   SendOTPRequest,
-  {rejectValue: string}
->('auth/sendOTP', async (data, {rejectWithValue}) => {
+  { rejectValue: string }
+>('auth/sendOTP', async (data, { rejectWithValue }) => {
   try {
     await apiService.sendOTP(data);
   } catch (error) {
@@ -40,10 +40,10 @@ export const sendOTP = createAsyncThunk<
 
 // Verify OTP
 export const verifyOTP = createAsyncThunk<
-  {tokens: VerifyOTPResponse; user: UserProfile},
+  { tokens: VerifyOTPResponse; user: UserProfile },
   VerifyOTPRequest,
-  {rejectValue: string}
->('auth/verifyOTP', async (data, {rejectWithValue}) => {
+  { rejectValue: string }
+>('auth/verifyOTP', async (data, { rejectWithValue }) => {
   try {
     // Verify OTP and get tokens
     const tokens = await apiService.verifyOTP(data);
@@ -63,7 +63,7 @@ export const verifyOTP = createAsyncThunk<
     // Store user data
     await storageService.setUserData(user);
 
-    return {tokens, user};
+    return { tokens, user };
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
@@ -73,8 +73,8 @@ export const verifyOTP = createAsyncThunk<
 export const fetchProfile = createAsyncThunk<
   UserProfile,
   void,
-  {rejectValue: string}
->('auth/fetchProfile', async (_, {rejectWithValue}) => {
+  { rejectValue: string }
+>('auth/fetchProfile', async (_, { rejectWithValue }) => {
   try {
     const response = await apiService.getAuthProfile();
     await storageService.setUserData(response.data);
@@ -88,8 +88,8 @@ export const fetchProfile = createAsyncThunk<
 export const updateProfile = createAsyncThunk<
   UserProfile,
   UpdateProfileRequest,
-  {rejectValue: string}
->('auth/updateProfile', async (data, {rejectWithValue}) => {
+  { rejectValue: string }
+>('auth/updateProfile', async (data, { rejectWithValue }) => {
   try {
     const response = await apiService.updateAuthProfile(data);
     await storageService.setUserData(response.data);
@@ -101,14 +101,15 @@ export const updateProfile = createAsyncThunk<
 
 // Google Sign-In (no backend)
 export const googleSignIn = createAsyncThunk<
-  {user: UserProfile; firebaseIdToken: string},
+  { user: UserProfile; firebaseIdToken: string },
   void,
-  {rejectValue: string}
->('auth/googleSignIn', async (_, {rejectWithValue}) => {
+  { rejectValue: string }
+>('auth/googleSignIn', async (_, { rejectWithValue }) => {
   try {
     // Sign in with Google and Firebase
     const firebaseAuthResult = await googleAuthService.signIn();
 
+    console.log('firebaseAuthResult', firebaseAuthResult);
     // Store Firebase tokens
     await storageService.setFirebaseIdToken(firebaseAuthResult.firebaseIdToken);
     await storageService.setFirebaseUid(firebaseAuthResult.firebaseUid);
@@ -145,10 +146,10 @@ export const googleSignIn = createAsyncThunk<
 
 // Restore session (check for existing tokens on app start)
 export const restoreSession = createAsyncThunk<
-  {user: UserProfile; accessToken: string; refreshToken: string; expiresAt: number} | null,
+  { user: UserProfile; accessToken: string; refreshToken: string; expiresAt: number } | null,
   void,
-  {rejectValue: string}
->('auth/restoreSession', async (_, {rejectWithValue}) => {
+  { rejectValue: string }
+>('auth/restoreSession', async (_, { rejectWithValue }) => {
   try {
     // First check Firebase auth state
     const firebaseUser = googleAuthService.getCurrentFirebaseUser();
@@ -172,14 +173,14 @@ export const restoreSession = createAsyncThunk<
 
     // Fallback to backend tokens if available
     const tokens = await storageService.getTokens();
-    
+
     if (!tokens.accessToken || !tokens.refreshToken) {
       return null;
     }
 
     // Check if token is expired
     const isExpired = await storageService.isTokenExpired();
-    
+
     if (isExpired) {
       // Token expired, clear auth data
       await storageService.clearAuthData();
@@ -206,9 +207,9 @@ export const restoreSession = createAsyncThunk<
 });
 
 // Logout
-export const logoutAsync = createAsyncThunk<void, void, {rejectValue: string}>(
+export const logoutAsync = createAsyncThunk<void, void, { rejectValue: string }>(
   'auth/logoutAsync',
-  async (_, {rejectWithValue}) => {
+  async (_, { rejectWithValue }) => {
     try {
       // Sign out from Google/Firebase
       try {
@@ -217,7 +218,7 @@ export const logoutAsync = createAsyncThunk<void, void, {rejectValue: string}>(
         console.warn('Error signing out from Google:', error);
         // Continue with clearing local data even if Google sign-out fails
       }
-      
+
       // Clear all auth data
       await storageService.clearAuthData();
     } catch (error) {
@@ -234,20 +235,20 @@ const authSlice = createSlice({
     // Set tokens (used by RTK Query baseApi for token refresh)
     setTokens: (
       state,
-      action: PayloadAction<{accessToken: string; refreshToken: string}>,
+      action: PayloadAction<{ accessToken: string; refreshToken: string }>,
     ) => {
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
       state.tokenExpiresAt = Date.now() + 900 * 1000; // 15 minutes
     },
-    
+
     // Update user data
     updateUser: (state, action: PayloadAction<Partial<UserProfile>>) => {
       if (state.user) {
-        state.user = {...state.user, ...action.payload};
+        state.user = { ...state.user, ...action.payload };
       }
     },
-    
+
     // Logout (sync action)
     logout: (state) => {
       state.isAuthenticated = false;
@@ -257,16 +258,16 @@ const authSlice = createSlice({
       state.user = null;
       state.error = null;
     },
-    
+
     // Clear error
     clearError: (state) => {
       state.error = null;
     },
-    
+
     // Set credentials (for backward compatibility)
     setCredentials: (
       state,
-      action: PayloadAction<{token: string; user: any}>,
+      action: PayloadAction<{ token: string; user: any }>,
     ) => {
       state.isAuthenticated = true;
       state.accessToken = action.payload.token;
@@ -390,5 +391,5 @@ const authSlice = createSlice({
   },
 });
 
-export const {setTokens, updateUser, logout, clearError, setCredentials} = authSlice.actions;
+export const { setTokens, updateUser, logout, clearError, setCredentials } = authSlice.actions;
 export default authSlice.reducer;

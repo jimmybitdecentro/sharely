@@ -1,6 +1,6 @@
 import auth from '@react-native-firebase/auth';
 import firebaseApp from '@react-native-firebase/app';
-import {GoogleSignin, statusCodes} from '@react-native-google-signin/google-signin';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 // Web client ID from Firebase Console (client_type 3)
 const WEB_CLIENT_ID = '778782615742-lakpqvh70iaciqu9tk0snqv206cuaebt.apps.googleusercontent.com';
@@ -67,19 +67,25 @@ class GoogleAuthService {
   async signIn(): Promise<FirebaseAuthResult> {
     try {
       // Ensure Google Sign-In is initialized
+      console.log('[GoogleAuthService] Initializing...');
       await this.initialize();
 
       // Check if user is already signed in
+      console.log('[GoogleAuthService] Checking if already signed in...');
       const isSignedIn = await this.isSignedIn();
+      console.log('[GoogleAuthService] isSignedIn:', isSignedIn);
       if (isSignedIn) {
         // Get current user info
+        console.log('[GoogleAuthService] Getting current user...');
         const currentUser = await GoogleSignin.getCurrentUser();
+        console.log('[GoogleAuthService] currentUser:', !!currentUser);
         if (currentUser) {
           return await this.getAuthResultFromGoogleUser(currentUser);
         }
       }
 
       // Sign in with Google
+      console.log('[GoogleAuthService] Checking Play Services...');
       await GoogleSignin.hasPlayServices({
         showPlayServicesUpdateDialog: true,
       });
@@ -87,43 +93,57 @@ class GoogleAuthService {
       // Sign in with Google - this will open the account picker
       // After user selects account, it should automatically redirect back to the app
       // If redirect fails, check SHA-1 fingerprint in Firebase Console
-      console.log('Starting Google Sign-In...');
+      // Sign in with Google - this will open the account picker
+      // After user selects account, it should automatically redirect back to the app
+      // If redirect fails, check SHA-1 fingerprint in Firebase Console
+      console.log('[GoogleAuthService] Starting Google Sign-In...');
       const googleUser = await GoogleSignin.signIn();
-      console.log('Google Sign-In completed, user data received:', !!googleUser.data);
-      
-      if (!googleUser.data) {
+      console.log('[GoogleAuthService] Google Sign-In response received:', JSON.stringify(googleUser, null, 2));
+
+      if (!googleUser || !googleUser.data) {
+        console.error('[GoogleAuthService] No user data returned from Google Sign-In');
         throw new Error('Google sign-in failed: No user data returned. Please ensure SHA-1 fingerprint is added to Firebase Console.');
       }
 
       // Verify we have the ID token
       if (!googleUser.data.idToken) {
+        console.error('[GoogleAuthService] No ID token received from Google Sign-In');
         throw new Error('Google sign-in failed: No ID token received. This usually means SHA-1 fingerprint is missing in Firebase Console.');
       }
 
+      console.log('[GoogleAuthService] Creating Firebase credential...');
       // Create Firebase credential from Google token
       const googleCredential = auth.GoogleAuthProvider.credential(
         googleUser.data.idToken,
       );
 
       if (!googleCredential) {
+        console.error('[GoogleAuthService] Failed to create Firebase credential');
         throw new Error('Failed to create Firebase credential');
       }
 
+      console.log('[GoogleAuthService] Signing in to Firebase...');
       // Sign in to Firebase with Google credential
       const firebaseUserCredential = await auth().signInWithCredential(
         googleCredential,
       );
 
       if (!firebaseUserCredential.user) {
+        console.error('[GoogleAuthService] Firebase sign-in failed: No user returned');
         throw new Error('Firebase sign-in failed: No user returned');
       }
+
+      console.log('[GoogleAuthService] Firebase sign-in successful, UID:', firebaseUserCredential.user.uid);
 
       // Get Firebase ID token
       const firebaseIdToken = await firebaseUserCredential.user.getIdToken();
 
       if (!firebaseIdToken) {
+        console.error('[GoogleAuthService] Failed to get Firebase ID token');
         throw new Error('Failed to get Firebase ID token');
       }
+
+      console.log('[GoogleAuthService] Firebase ID token retrieved');
 
       // Get user info from Firebase user
       const firebaseUser = firebaseUserCredential.user;
