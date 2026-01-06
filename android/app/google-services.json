@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "778782615742",
-    "project_id": "sharely-5e764",
-    "storage_bucket": "sharely-5e764.firebasestorage.app"
+    "project_number": "195104490042",
+    "project_id": "sharely-32a2b",
+    "storage_bucket": "sharely-32a2b.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:778782615742:android:14983d8e96523de2a616ef",
+        "mobilesdk_app_id": "1:195104490042:android:b3cb8ed8dd67ba224c2b03",
         "android_client_info": {
-          "package_name": "com.sharely"
+          "package_name": "com.sharelyapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "778782615742-lakpqvh70iaciqu9tk0snqv206cuaebt.apps.googleusercontent.com",
+          "client_id": "195104490042-hpn88c7afqvm2iovpvu7a9p0bnaoo01t.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBR1gO_dLSRpj0xVLEb3u06A3jy6Q50Ml8"
+          "current_key": "AIzaSyBIUOSid5mELF9Owkwsq678mgv5djf0N3g"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "778782615742-lakpqvh70iaciqu9tk0snqv206cuaebt.apps.googleusercontent.com",
+              "client_id": "195104490042-hpn88c7afqvm2iovpvu7a9p0bnaoo01t.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
