@@ -79,7 +79,7 @@ android {
 
     namespace "com.share"
     defaultConfig {
-        applicationId "com.share"
+        applicationId "com.sharelyapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
