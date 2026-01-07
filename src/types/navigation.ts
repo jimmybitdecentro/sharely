@@ -1,4 +1,4 @@
-import {NavigatorScreenParams} from '@react-navigation/native';
+import { NavigatorScreenParams } from '@react-navigation/native';
 
 export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList>;
@@ -11,6 +11,7 @@ export type RootStackParamList = {
   TransactionsModal: undefined;
   HelpSupportModal: undefined;
   NotificationsModal: undefined;
+  YouTubeMetrics: undefined;
 };
 
 export type AuthStackParamList = {
@@ -27,13 +28,13 @@ export type MainTabParamList = {
   Add: undefined;
   Notifications: undefined;
   ProfileStack: NavigatorScreenParams<ProfileStackParamList>;
-  MyLinksScreen:undefined;
+  MyLinksScreen: undefined;
   HelpSupport: undefined;
 };
 
 export type HomeStackParamList = {
   Home: undefined;
-  ProductDetail: {productId: string};
+  ProductDetail: { productId: string };
   Notifications: undefined;
   HelpSupport: undefined;
 };

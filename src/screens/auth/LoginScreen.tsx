@@ -24,8 +24,8 @@ const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  const { sendOTP, signInWithGoogle, isLoading: isAuthLoading } = useAuth();
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { sendOTP, signInWithGoogle, isOtpLoading, isGoogleLoading: isAuthGoogleLoading } = useAuth();
+  const [isLocalGoogleLoading, setIsLocalGoogleLoading] = useState(false);
 
   const {
     formData,
@@ -56,7 +56,7 @@ const LoginScreen: React.FC = () => {
   // Handle Google Sign-In
   const handleGoogleSignIn = async () => {
     console.log('[LoginScreen] handleGoogleSignIn pressed');
-    setIsGoogleLoading(true);
+    setIsLocalGoogleLoading(true);
     try {
       console.log('[LoginScreen] Calling signInWithGoogle...');
       const result = await signInWithGoogle();
@@ -72,7 +72,7 @@ const LoginScreen: React.FC = () => {
       console.error('[LoginScreen] Unexpected error during Google sign-in:', error);
       Alert.alert('Unexpected Error', error.message || 'An unexpected error occurred');
     } finally {
-      setIsGoogleLoading(false);
+      setIsLocalGoogleLoading(false);
     }
   };
 
@@ -92,17 +92,21 @@ const LoginScreen: React.FC = () => {
   const TermsFooter = () => (
     <View style={styles.footerContainer}>
       <View style={styles.termsContainer}>
-        <Text style={styles.termsText}>By Continuing, You Agree To Our</Text>
-        <TouchableOpacity onPress={() => console.log('Terms pressed')}>
-          <Text style={styles.termsLink}>Terms & Conditions</Text>
-        </TouchableOpacity>
+        <Text style={styles.termsText}>
+          By Continuing, You Agree To Our{' '}
+          <Text style={styles.termsLink} onPress={() => console.log('Terms pressed')}>
+            Terms & Conditions
+          </Text>
+        </Text>
       </View>
 
       <View style={styles.signupContainer}>
-        <Text style={styles.signupText}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-          <Text style={styles.signupLink}>Sign Up</Text>
-        </TouchableOpacity>
+        <Text style={styles.signupText}>
+          Don't have an account?{' '}
+          <Text style={styles.signupLink} onPress={() => navigation.navigate('Signup')}>
+            Sign Up
+          </Text>
+        </Text>
       </View>
     </View>
   );
@@ -120,10 +124,10 @@ const LoginScreen: React.FC = () => {
     <TouchableOpacity
       style={styles.googleButton}
       onPress={handleGoogleSignIn}
-      disabled={isGoogleLoading || isButtonLoading}
+      disabled={isLocalGoogleLoading || isAuthGoogleLoading || isOtpLoading || isSubmitting}
       activeOpacity={0.8}>
       <View style={styles.googleButtonContent}>
-        {isGoogleLoading ? (
+        {isLocalGoogleLoading || isAuthGoogleLoading ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
           <Text style={styles.googleButtonText}>Continue with Google</Text>
@@ -141,11 +145,11 @@ const LoginScreen: React.FC = () => {
     </View>
   );
 
-  const isButtonLoading = isSubmitting || isAuthLoading;
+  const isOtpButtonLoading = isSubmitting || isOtpLoading;
 
   return (
     <Container style={styles.container}>
-      <IVLogo mt={Platform?.OS === 'android' ? s(20) : 0} />
+      <IVLogo mt={Platform.OS === 'android' ? s(20) : 0} />
       <View style={styles.centerWrapper}>
         <FormCard
           title="Welcome Back!"
@@ -153,11 +157,10 @@ const LoginScreen: React.FC = () => {
           position="center"
           buttonText="SEND OTP"
           onSubmit={onFormSubmit}
-          isSubmitting={isButtonLoading}
+          isSubmitting={isOtpButtonLoading}
           footerComponent={<TermsFooter />}
           renderContent={() => (
             <>
-              {/* Email Field */}
               <View style={styles.fieldGroup}>
                 <FieldLabel label="Email" />
                 <InputField
@@ -169,11 +172,10 @@ const LoginScreen: React.FC = () => {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  editable={!isButtonLoading}
+                  editable={!isOtpButtonLoading && !isLocalGoogleLoading && !isAuthGoogleLoading}
                 />
               </View>
 
-              {/* Referral Field */}
               <View style={styles.fieldGroup}>
                 <FieldLabel label="Referral" optional />
                 <InputField
@@ -182,18 +184,18 @@ const LoginScreen: React.FC = () => {
                   onChangeText={(text) => handleInputChange('referral', text)}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  editable={!isButtonLoading}
+                  editable={!isOtpButtonLoading && !isLocalGoogleLoading && !isAuthGoogleLoading}
                 />
               </View>
 
-              {/* Divider */}
               <Divider />
 
-              {/* Google Sign-In Button */}
               <GoogleSignInButton />
             </>
           )}
+          
         />
+        
       </View>
     </Container>
   );

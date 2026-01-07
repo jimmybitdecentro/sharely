@@ -1,5 +1,5 @@
-import {useCallback} from 'react';
-import {useAppDispatch, useAppSelector} from '../store/hooks';
+import { useCallback } from 'react';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   sendOTP,
   verifyOTP,
@@ -10,12 +10,12 @@ import {
   logoutAsync,
   clearError,
 } from '../store/slices/authSlice';
-import {showSuccessToast, showErrorToast} from '../store/slices/uiSlice';
-import {SendOTPRequest, VerifyOTPRequest, UpdateProfileRequest} from '../types/auth.types';
+import { showSuccessToast, showErrorToast } from '../store/slices/uiSlice';
+import { SendOTPRequest, VerifyOTPRequest, UpdateProfileRequest } from '../types/auth.types';
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
-  const {isAuthenticated, user, isLoading, error, accessToken} = useAppSelector(
+  const { isAuthenticated, user, isLoading, error, accessToken, isOtpLoading, isGoogleLoading } = useAppSelector(
     (state) => state.auth,
   );
 
@@ -24,12 +24,12 @@ export const useAuth = () => {
     async (data: SendOTPRequest) => {
       try {
         await dispatch(sendOTP(data)).unwrap();
-        dispatch(showSuccessToast({title: 'OTP Sent', message: 'Check your email for the verification code'}));
-        return {success: true};
+        dispatch(showSuccessToast({ title: 'OTP Sent', message: 'Check your email for the verification code' }));
+        return { success: true };
       } catch (err) {
         const errorMessage = typeof err === 'string' ? err : 'Failed to send OTP';
-        dispatch(showErrorToast({title: 'Error', message: errorMessage}));
-        return {success: false, error: errorMessage};
+        dispatch(showErrorToast({ title: 'Error', message: errorMessage }));
+        return { success: false, error: errorMessage };
       }
     },
     [dispatch],
@@ -40,12 +40,12 @@ export const useAuth = () => {
     async (data: VerifyOTPRequest) => {
       try {
         const result = await dispatch(verifyOTP(data)).unwrap();
-        dispatch(showSuccessToast({title: 'Success', message: 'Welcome to Sharely!'}));
-        return {success: true, data: result};
+        dispatch(showSuccessToast({ title: 'Success', message: 'Welcome to Sharely!' }));
+        return { success: true, data: result };
       } catch (err) {
         const errorMessage = typeof err === 'string' ? err : 'Failed to verify OTP';
-        dispatch(showErrorToast({title: 'Error', message: errorMessage}));
-        return {success: false, error: errorMessage};
+        dispatch(showErrorToast({ title: 'Error', message: errorMessage }));
+        return { success: false, error: errorMessage };
       }
     },
     [dispatch],
@@ -56,11 +56,11 @@ export const useAuth = () => {
     async () => {
       try {
         const result = await dispatch(googleSignIn()).unwrap();
-        dispatch(showSuccessToast({title: 'Success', message: 'Welcome to Sharely!'}));
-        return {success: true, data: result};
+        dispatch(showSuccessToast({ title: 'Success', message: 'Welcome to Sharely!' }));
+        return { success: true, data: result };
       } catch (err: any) {
         let errorMessage = 'Failed to sign in with Google';
-        
+
         if (typeof err === 'string') {
           errorMessage = err;
         } else if (err?.message) {
@@ -79,8 +79,8 @@ export const useAuth = () => {
         }
 
         console.error('Google sign-in error:', err);
-        dispatch(showErrorToast({title: 'Sign-In Error', message: errorMessage}));
-        return {success: false, error: errorMessage};
+        dispatch(showErrorToast({ title: 'Sign-In Error', message: errorMessage }));
+        return { success: false, error: errorMessage };
       }
     },
     [dispatch],
@@ -90,10 +90,10 @@ export const useAuth = () => {
   const handleFetchProfile = useCallback(async () => {
     try {
       const result = await dispatch(fetchProfile()).unwrap();
-      return {success: true, data: result};
+      return { success: true, data: result };
     } catch (err) {
       const errorMessage = typeof err === 'string' ? err : 'Failed to fetch profile';
-      return {success: false, error: errorMessage};
+      return { success: false, error: errorMessage };
     }
   }, [dispatch]);
 
@@ -102,12 +102,12 @@ export const useAuth = () => {
     async (data: UpdateProfileRequest) => {
       try {
         const result = await dispatch(updateProfile(data)).unwrap();
-        dispatch(showSuccessToast({title: 'Success', message: 'Profile updated successfully'}));
-        return {success: true, data: result};
+        dispatch(showSuccessToast({ title: 'Success', message: 'Profile updated successfully' }));
+        return { success: true, data: result };
       } catch (err) {
         const errorMessage = typeof err === 'string' ? err : 'Failed to update profile';
-        dispatch(showErrorToast({title: 'Error', message: errorMessage}));
-        return {success: false, error: errorMessage};
+        dispatch(showErrorToast({ title: 'Error', message: errorMessage }));
+        return { success: false, error: errorMessage };
       }
     },
     [dispatch],
@@ -117,9 +117,9 @@ export const useAuth = () => {
   const handleRestoreSession = useCallback(async () => {
     try {
       const result = await dispatch(restoreSession()).unwrap();
-      return {success: true, data: result};
+      return { success: true, data: result };
     } catch (err) {
-      return {success: false, error: 'Failed to restore session'};
+      return { success: false, error: 'Failed to restore session' };
     }
   }, [dispatch]);
 
@@ -127,10 +127,10 @@ export const useAuth = () => {
   const handleLogout = useCallback(async () => {
     try {
       await dispatch(logoutAsync()).unwrap();
-      dispatch(showSuccessToast({title: 'Logged Out', message: 'You have been logged out successfully'}));
-      return {success: true};
+      dispatch(showSuccessToast({ title: 'Logged Out', message: 'You have been logged out successfully' }));
+      return { success: true };
     } catch (err) {
-      return {success: false, error: 'Failed to logout'};
+      return { success: false, error: 'Failed to logout' };
     }
   }, [dispatch]);
 
@@ -144,9 +144,11 @@ export const useAuth = () => {
     isAuthenticated,
     user,
     isLoading,
+    isOtpLoading,
+    isGoogleLoading,
     error,
     accessToken,
-    
+
     // Actions
     sendOTP: handleSendOTP,
     verifyOTP: handleVerifyOTP,

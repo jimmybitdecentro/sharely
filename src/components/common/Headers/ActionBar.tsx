@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
 import { images } from '../../../theme/images';
 import { s } from '../../../theme/size';
 import IVLogo from '../../base/ImageView/IVLogo';
@@ -35,7 +35,7 @@ export const ActionBar = ({
 
       {sharePress ? <IVCircle size={40} src={images.share}
         mr={s(10)}
-        onPress={ onSharePress }
+        onPress={onSharePress}
       />
         : <View style={styles.backButtonContainer} />
       }
@@ -80,7 +80,7 @@ const headerStyles = () =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginTop: s(0),
+      marginTop: Platform.OS === 'ios' ? s(0) : s(30),
       paddingBottom: s(10),
     },
     backButtonContainer: {

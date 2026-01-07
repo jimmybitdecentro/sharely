@@ -1,26 +1,25 @@
-export const formatters = {
-  currency: (amount: number, currency: string = '₹'): string => {
-    return `${currency}${amount.toLocaleString('en-IN')}`;
-  },
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
-  date: (date: string | Date): string => {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  },
+dayjs.extend(relativeTime);
 
-  dateTime: (date: string | Date): string => {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  },
+export const formatNumber = (num: string | number): string => {
+  const n = typeof num === 'string' ? parseInt(num, 10) : num;
+  if (isNaN(n)) return '0';
+
+  if (n >= 1000000) {
+    return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (n >= 1000) {
+    return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  return n.toString();
 };
 
+export const formatRelativeDate = (date: string): string => {
+  return dayjs(date).fromNow();
+};
+
+export const formatFullDate = (date: string): string => {
+  return dayjs(date).format('MMM D, YYYY');
+};

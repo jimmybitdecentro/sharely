@@ -20,6 +20,8 @@ const initialState: AuthState = {
   tokenExpiresAt: null,
   user: null,
   isLoading: false,
+  isOtpLoading: false,
+  isGoogleLoading: false,
   error: null,
 };
 
@@ -46,7 +48,10 @@ export const verifyOTP = createAsyncThunk<
 >('auth/verifyOTP', async (data, { rejectWithValue }) => {
   try {
     // Verify OTP and get tokens
-    const tokens = await apiService.verifyOTP(data);
+    const tokens = await apiService.verifyOTP({
+      ...data,
+      type: data.type || 'email',
+    });
 
     // Store tokens
     await storageService.setTokens({
@@ -109,22 +114,27 @@ export const googleSignIn = createAsyncThunk<
     // Sign in with Google and Firebase
     const firebaseAuthResult = await googleAuthService.signIn();
 
-    console.log('firebaseAuthResult', firebaseAuthResult);
-    // Store Firebase tokens
-    await storageService.setFirebaseIdToken(firebaseAuthResult.firebaseIdToken);
-    await storageService.setFirebaseUid(firebaseAuthResult.firebaseUid);
+    if (!firebaseAuthResult.googleIdToken) {
+      throw new Error('Failed to get Google ID Token');
+    }
 
-    // Create user profile from Firebase user data
-    const user: UserProfile = {
-      id: firebaseAuthResult.firebaseUid,
-      phoneNumber: null,
-      name: firebaseAuthResult.userInfo.name,
-      email: firebaseAuthResult.userInfo.email,
-      role: 'USER',
-      referralCode: '', // Generate or leave empty
-      firebaseUid: firebaseAuthResult.firebaseUid,
-      profileImage: firebaseAuthResult.userInfo.profileImage,
-    };
+    // Verify with backend
+    const tokens = await apiService.verifyOTP({
+      type: 'google',
+      idToken: firebaseAuthResult.googleIdToken,
+    });
+
+    // Store backend tokens
+    await storageService.setTokens({
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresIn: tokens.expires_in,
+      refreshExpiresIn: tokens.refresh_expires_in,
+    });
+
+    // Fetch user profile from backend
+    const profileResponse = await apiService.getAuthProfile();
+    const user = profileResponse.data;
 
     // Store user data
     await storageService.setUserData(user);
@@ -278,25 +288,25 @@ const authSlice = createSlice({
     // Send OTP
     builder
       .addCase(sendOTP.pending, (state) => {
-        state.isLoading = true;
+        state.isOtpLoading = true;
         state.error = null;
       })
       .addCase(sendOTP.fulfilled, (state) => {
-        state.isLoading = false;
+        state.isOtpLoading = false;
       })
       .addCase(sendOTP.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isOtpLoading = false;
         state.error = action.payload || 'Failed to send OTP';
       });
 
     // Verify OTP
     builder
       .addCase(verifyOTP.pending, (state) => {
-        state.isLoading = true;
+        state.isOtpLoading = true;
         state.error = null;
       })
       .addCase(verifyOTP.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isOtpLoading = false;
         state.isAuthenticated = true;
         state.accessToken = action.payload.tokens.access_token;
         state.refreshToken = action.payload.tokens.refresh_token;
@@ -304,7 +314,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
       })
       .addCase(verifyOTP.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isOtpLoading = false;
         state.error = action.payload || 'Failed to verify OTP';
       });
 
@@ -362,19 +372,20 @@ const authSlice = createSlice({
     // Google Sign-In
     builder
       .addCase(googleSignIn.pending, (state) => {
-        state.isLoading = true;
+        state.isGoogleLoading = true;
         state.error = null;
       })
       .addCase(googleSignIn.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isGoogleLoading = false;
         state.isAuthenticated = true;
-        state.accessToken = action.payload.firebaseIdToken; // Use Firebase token as access token
-        state.refreshToken = null; // No refresh token for Firebase
-        state.tokenExpiresAt = Date.now() + 3600 * 1000; // Firebase tokens last ~1 hour
+        // The tokens are already stored in storageService by the thunk
+        // We update the state with the user data
         state.user = action.payload.user;
+        // Note: accessToken and refreshToken will be updated by the next app start or we can set them here if needed
+        // But since we navigate to Home, the state should be consistent
       })
       .addCase(googleSignIn.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isGoogleLoading = false;
         state.error = action.payload || 'Failed to sign in with Google';
       });
 

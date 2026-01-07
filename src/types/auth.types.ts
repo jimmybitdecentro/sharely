@@ -31,8 +31,10 @@ export interface SendOTPRequest {
 }
 
 export interface VerifyOTPRequest {
-  email: string;
-  otp: string;
+  type?: 'email' | 'google';
+  email?: string;
+  otp?: string;
+  idToken?: string;
 }
 
 export interface RefreshTokenRequest {
@@ -96,6 +98,8 @@ export interface AuthState {
   tokenExpiresAt: number | null;
   user: UserProfile | null;
   isLoading: boolean;
+  isOtpLoading: boolean;
+  isGoogleLoading: boolean;
   error: string | null;
 }
 
@@ -111,6 +115,7 @@ export interface TokenData {
 export interface FirebaseAuthResult {
   firebaseUid: string;
   firebaseIdToken: string;
+  googleIdToken?: string;
   userInfo: {
     name: string | null;
     email: string | null;

@@ -3,11 +3,12 @@ import firebaseApp from '@react-native-firebase/app';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 // Web client ID from Firebase Console (client_type 3)
-const WEB_CLIENT_ID = '778782615742-lakpqvh70iaciqu9tk0snqv206cuaebt.apps.googleusercontent.com';
+const WEB_CLIENT_ID = '195104490042-hpn88c7afqvm2iovpvu7a9p0bnaoo01t.apps.googleusercontent.com';
 
 export interface FirebaseAuthResult {
   firebaseUid: string;
   firebaseIdToken: string;
+  googleIdToken?: string;
   userInfo: {
     name: string | null;
     email: string | null;
@@ -40,6 +41,7 @@ class GoogleAuthService {
         webClientId: WEB_CLIENT_ID,
         offlineAccess: true,
         forceCodeForRefreshToken: false,
+        scopes: ['https://www.googleapis.com/auth/youtube.readonly'],
       });
       this.isInitialized = true;
     } catch (error) {
@@ -53,7 +55,7 @@ class GoogleAuthService {
    */
   async isSignedIn(): Promise<boolean> {
     try {
-      return await GoogleSignin.isSignedIn();
+      return await GoogleSignin.hasPreviousSignIn();
     } catch (error) {
       console.error('Error checking Google sign-in status:', error);
       return false;
@@ -156,6 +158,7 @@ class GoogleAuthService {
       return {
         firebaseUid: firebaseUser.uid,
         firebaseIdToken,
+        googleIdToken: googleUser.data.idToken || undefined,
         userInfo,
       };
     } catch (error: any) {
@@ -203,6 +206,7 @@ class GoogleAuthService {
         return {
           firebaseUid: firebaseUserCredential.user.uid,
           firebaseIdToken,
+          googleIdToken: googleUser.idToken || undefined,
           userInfo: {
             name: firebaseUserCredential.user.displayName || null,
             email: firebaseUserCredential.user.email || null,
@@ -216,6 +220,7 @@ class GoogleAuthService {
       return {
         firebaseUid: firebaseUser.uid,
         firebaseIdToken,
+        googleIdToken: googleUser.idToken || undefined,
         userInfo: {
           name: firebaseUser.displayName || null,
           email: firebaseUser.email || null,

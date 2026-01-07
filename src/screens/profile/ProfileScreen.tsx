@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,19 +7,19 @@ import {
   Modal,
   ImageSourcePropType,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import Container from '../../components/layouts/Container/Container';
 import FormCard from '../../components/common/FormCard/FormCard';
 import Label from '../../components/base/Label/Label';
-import {useTheme} from '../../hooks/useTheme';
-import {useAuth} from '../../hooks/useAuth';
-import {RootStackParamList} from '../../types/navigation';
-import {Theme} from '../../types/theme';
-import {s} from '../../theme/size';
-import {images} from '../../theme/images';
-import {ActionBar} from '../../components/common/Headers/ActionBar';
+import { useTheme } from '../../hooks/useTheme';
+import { useAuth } from '../../hooks/useAuth';
+import { RootStackParamList } from '../../types/navigation';
+import { Theme } from '../../types/theme';
+import { s } from '../../theme/size';
+import { images } from '../../theme/images';
+import { ActionBar } from '../../components/common/Headers/ActionBar';
 import IVCircle from '../../components/base/ImageView/IVCircle';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -35,8 +35,8 @@ interface MenuItem {
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const {theme} = useTheme();
-  const {user, logout, isLoading} = useAuth();
+  const { theme } = useTheme();
+  const { user, logout, isLoading } = useAuth();
   const styles = createStyles(theme);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -54,13 +54,14 @@ const ProfileScreen: React.FC = () => {
   };
 
   const menuItems: MenuItem[] = [
-    {key: 'editProfile', label: 'Edit Profile', icon: images.editProfile, screen: 'EditProfileModal'},
-    {key: 'paymentMethods', label: 'Payment Methods', icon: images.paymentMethod},
-    {key: 'preferences', label: 'Preferences', icon: images.preferences, screen: 'PreferencesModal'},
-    {key: 'referral', label: 'Referral', icon: images.referral, screen: 'ReferralModal'},
-    {key: 'helpSupport', label: 'Help & Support', icon: images.help, screen: 'HelpSupportModal'},
-    {key: 'transaction', label: 'Transaction', icon: images.transaction, screen: 'TransactionsModal'},
-    {key: 'logout', label: 'Log out', icon: images.logout, action: handleLogoutPress, isLogout: true},
+    { key: 'editProfile', label: 'Edit Profile', icon: images.editProfile, screen: 'EditProfileModal' },
+    { key: 'paymentMethods', label: 'Payment Methods', icon: images.paymentMethod },
+    { key: 'preferences', label: 'Preferences', icon: images.preferences, screen: 'PreferencesModal' },
+    { key: 'referral', label: 'Referral', icon: images.referral, screen: 'ReferralModal' },
+    { key: 'youtubeMetrics', label: 'YouTube Metrics', icon: images.profile, screen: 'YouTubeMetrics' as any },
+    { key: 'helpSupport', label: 'Help & Support', icon: images.help, screen: 'HelpSupportModal' },
+    { key: 'transaction', label: 'Transaction', icon: images.transaction, screen: 'TransactionsModal' },
+    { key: 'logout', label: 'Log out', icon: images.logout, action: handleLogoutPress, isLogout: true },
   ];
 
   const handleMenuPress = (item: MenuItem) => {
@@ -122,7 +123,7 @@ const ProfileScreen: React.FC = () => {
               text={`Referral: ${user.referralCode}`}
               size={12}
               color="#23C28C"
-              style={{marginLeft: s(4)}}
+              style={{ marginLeft: s(4) }}
             />
           </View>
         )}
@@ -132,7 +133,7 @@ const ProfileScreen: React.FC = () => {
       <FormCard
         title=""
         buttonText=""
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         showButton={false}
         position="belowHeader"
         cardStyle={styles.formCardStyle}>
@@ -185,8 +186,8 @@ const ProfileScreen: React.FC = () => {
                 disabled={isLoading}>
                 <LinearGradient
                   colors={['#2C73D2', '#23C28C']}
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 0}}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
                   style={styles.confirmButtonGradient}>
                   <Label text={isLoading ? '...' : 'YES'} size={16} weight="bold" color="#FFFFFF" />
                 </LinearGradient>
