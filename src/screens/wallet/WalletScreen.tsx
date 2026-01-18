@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -6,29 +6,33 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import {
   useNavigation,
   CompositeNavigationProp,
 } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import Feather from '@react-native-vector-icons/feather';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import Container from '../../components/layouts/Container/Container';
 import Label from '../../components/base/Label/Label';
 import InputField from '../../components/base/InputField/InputField';
 import Button from '../../components/base/Button/Button';
-import { useTheme } from '../../hooks/useTheme';
-import { Theme } from '../../types/theme';
-import { s } from '../../theme/size';
-import { images } from '../../theme/images';
+import {BottomSheet} from '../../components/common/BottomSheet';
+import {useTheme} from '../../hooks/useTheme';
+import {useWallet, useTransactions} from '../../hooks/useWallet';
+import {Theme} from '../../types/theme';
+import {s} from '../../theme/size';
+import {images} from '../../theme/images';
 import {
   ProfileStackParamList,
   MainTabParamList,
   RootStackParamList,
 } from '../../types/navigation';
-import { MainHeader } from '../../components/common/Headers/MainHeader';
+import {MainHeader} from '../../components/common/Headers/MainHeader';
 import WhiteCard from '../../components/common/WhiteCard';
+import {WalletTransaction, PayoutMethod} from '../../types/wallet.types';
 
 type WalletScreenNavigationProp = CompositeNavigationProp<
   StackNavigationProp<ProfileStackParamList, 'Wallet'>,
@@ -38,106 +42,179 @@ type WalletScreenNavigationProp = CompositeNavigationProp<
   >
 >;
 
-interface Transaction {
-  id: string;
-  type: 'withdraw' | 'earnings';
-  title: string;
-  date: string;
-  amount: number;
-}
-
-const sampleTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'withdraw',
-    title: 'Withdraw',
-    date: 'Today, 2:30 PM',
-    amount: -200,
-  },
-  {
-    id: '2',
-    type: 'earnings',
-    title: 'Earnings from link clicks',
-    date: 'Yesterday, 5:45 PM',
-    amount: 12,
-  },
-  {
-    id: '3',
-    type: 'withdraw',
-    title: 'Withdraw',
-    date: 'Today, 2:30 PM',
-    amount: -200,
-  },
-  {
-    id: '4',
-    type: 'earnings',
-    title: 'Earnings from link clicks',
-    date: 'Yesterday, 5:45 PM',
-    amount: 12,
-  },
+const PAYOUT_METHODS: {id: PayoutMethod; label: string}[] = [
+  {id: 'UPI', label: 'UPI'},
+  {id: 'PAYPAL', label: 'PayPal'},
+  {id: 'CRYPTO', label: 'Crypto'},
 ];
 
 const WalletScreen: React.FC = () => {
   const navigation = useNavigation<WalletScreenNavigationProp>();
-  const { theme } = useTheme();
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [upiId, setUpiId] = useState('');
+  const {theme} = useTheme();
   const styles = createStyles(theme);
 
-  const handleWithdraw = () => {
-    console.log('Withdraw:', { amount: withdrawAmount, upiId });
+  // Wallet data
+  const {
+    balance,
+    pendingWithdrawals,
+    availableBalance,
+    isLoadingBalance,
+    isWithdrawing,
+    balanceError,
+    refetchBalance,
+    withdraw,
+  } = useWallet();
+
+  // Recent transactions (limit to 4)
+  const {
+    transactions,
+    isLoading: isLoadingTransactions,
+    refetch: refetchTransactions,
+  } = useTransactions({initialLimit: 4});
+
+  // Withdrawal form state
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState<PayoutMethod>('UPI');
+  const [upiId, setUpiId] = useState('');
+  const [paypalEmail, setPaypalEmail] = useState('');
+  const [cryptoAddress, setCryptoAddress] = useState('');
+  const [cryptoNetwork, setCryptoNetwork] = useState('ETH');
+  const [methodSheetVisible, setMethodSheetVisible] = useState(false);
+
+  const handleWithdraw = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount < 100) {
+      return; // Validation handled by button disable state
+    }
+
+    let accountDetails: any = {};
+    switch (selectedMethod) {
+      case 'UPI':
+        accountDetails = {upiId};
+        break;
+      case 'PAYPAL':
+        accountDetails = {email: paypalEmail};
+        break;
+      case 'CRYPTO':
+        accountDetails = {cryptoAddress, cryptoNetwork};
+        break;
+    }
+
+    const result = await withdraw({
+      amount,
+      method: selectedMethod,
+      accountDetails,
+    });
+
+    if (result.success) {
+      // Clear form
+      setWithdrawAmount('');
+      setUpiId('');
+      setPaypalEmail('');
+      setCryptoAddress('');
+      // Refresh data
+      refetchBalance();
+      refetchTransactions();
+    }
   };
 
-  const renderTransactionItem = ({ item }: { item: Transaction }) => (
-    <View style={styles.transactionItem}>
-      <View style={styles.transactionLeft}>
-        <View
+  const isWithdrawDisabled = () => {
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount < 100 || amount > availableBalance) {
+      return true;
+    }
+    switch (selectedMethod) {
+      case 'UPI':
+        return !upiId.trim();
+      case 'PAYPAL':
+        return !paypalEmail.trim();
+      case 'CRYPTO':
+        return !cryptoAddress.trim() || !cryptoNetwork.trim();
+    }
+    return false;
+  };
+
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const renderTransactionItem = ({item}: {item: WalletTransaction}) => {
+    const isWithdrawal = item.type === 'WITHDRAWAL';
+    const isNegative = item.amount < 0 || isWithdrawal;
+
+    return (
+      <View style={styles.transactionItem}>
+        <View style={styles.transactionLeft}>
+          <View
+            style={[
+              styles.transactionIcon,
+              isNegative ? styles.withdrawIcon : styles.earningsIcon,
+            ]}>
+            <Image
+              source={isNegative ? images.wallet : images.earn}
+              style={[
+                styles.transactionIconImage,
+                {tintColor: isNegative ? '#EF5350' : '#4CAF50'},
+              ]}
+            />
+          </View>
+          <View style={styles.transactionDetails}>
+            <Label
+              text={item.description || item.type}
+              size={15}
+              weight="medium"
+              color="#1A1A1A"
+              numberOfLines={1}
+            />
+            <Label
+              text={new Date(item.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+              size={12}
+              color="#888888"
+              style={styles.transactionDate}
+            />
+          </View>
+        </View>
+        <Text
           style={[
-            styles.transactionIcon,
-            item.type === 'withdraw'
-              ? styles.withdrawIcon
-              : styles.earningsIcon,
-          ]}
-        >
-          {item.type === 'withdraw' ? (
-            <View style={styles.withdrawArrowContainer}>
-              <Feather name="check" size={s(14)} color="#EF5350" />
-              <Feather name="arrow-up-right" size={s(12)} color="#EF5350" style={styles.smallArrow} />
-            </View>
-          ) : (
-            <Feather name="arrow-down-left" size={s(20)} color="#4CAF50" />
-          )}
-        </View>
-        <View style={styles.transactionDetails}>
-          <Label text={item.title} size={15} weight="medium" color="#1A1A1A" />
-          <Label
-            text={item.date}
-            size={12}
-            color="#888888"
-            style={styles.transactionDate}
-          />
-        </View>
+            styles.transactionAmount,
+            isNegative ? styles.negativeAmount : styles.positiveAmount,
+          ]}>
+          {isNegative ? `- $${Math.abs(item.amount)}` : `+$${item.amount}`}
+        </Text>
       </View>
-      <Text
-        style={[
-          styles.transactionAmount,
-          item.amount < 0 ? styles.negativeAmount : styles.positiveAmount,
-        ]}
-      >
-        {item.amount < 0 ? `- $${Math.abs(item.amount)}` : `+$${item.amount}`}
-      </Text>
-    </View>
-  );
+    );
+  };
+
+  const isRefreshing = isLoadingBalance || isLoadingTransactions;
+
+  const handleRefresh = () => {
+    refetchBalance();
+    refetchTransactions();
+  };
 
   return (
-    <Container >
-     
-     <MainHeader />
-     <WhiteCard>
+    <Container>
+      <MainHeader />
+      <WhiteCard>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
-        >
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              colors={['#23C28C']}
+              tintColor="#23C28C"
+            />
+          }>
           {/* Balance Section */}
           <View style={styles.balanceSection}>
             <Label
@@ -158,10 +235,18 @@ const WalletScreen: React.FC = () => {
                 }}
               />
               <View style={styles.balanceTextContainer}>
-                <Text style={styles.balanceAmount}>
-                  <Text style={styles.balanceMain}>121,293</Text>
-                  <Text style={styles.balanceDecimal}>.00</Text>
-                </Text>
+                {isLoadingBalance ? (
+                  <ActivityIndicator size="small" color="#23C28C" />
+                ) : (
+                  <Text style={styles.balanceAmount}>
+                    <Text style={styles.balanceMain}>
+                      {formatCurrency(availableBalance).split('.')[0]}
+                    </Text>
+                    <Text style={styles.balanceDecimal}>
+                      .{formatCurrency(availableBalance).split('.')[1]}
+                    </Text>
+                  </Text>
+                )}
               </View>
               <Label
                 text="USD"
@@ -171,12 +256,14 @@ const WalletScreen: React.FC = () => {
                 style={styles.currencyLabel}
               />
             </View>
-            <Label
-              text="This Month: ₹1325"
-              size={13}
-              color="#666666"
-              style={styles.monthlyEarnings}
-            />
+            {pendingWithdrawals > 0 && (
+              <Label
+                text={`Pending: $${formatCurrency(pendingWithdrawals)}`}
+                size={13}
+                color="#FF9800"
+                style={styles.monthlyEarnings}
+              />
+            )}
           </View>
 
           {/* Divider */}
@@ -185,16 +272,31 @@ const WalletScreen: React.FC = () => {
           {/* Stats Row */}
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Label text="Total Clicks" size={12} color="#888888" />
-              <Label text="125" size={24} weight="bold" color="#1A1A1A" />
+              <Label text="Total Balance" size={12} color="#888888" />
+              <Label
+                text={`$${formatCurrency(balance)}`}
+                size={20}
+                weight="bold"
+                color="#1A1A1A"
+              />
             </View>
             <View style={styles.statItem}>
-              <Label text="Referrals" size={12} color="#888888" />
-              <Label text="23" size={24} weight="bold" color="#1A1A1A" />
+              <Label text="Pending" size={12} color="#888888" />
+              <Label
+                text={`$${formatCurrency(pendingWithdrawals)}`}
+                size={20}
+                weight="bold"
+                color="#FF9800"
+              />
             </View>
             <View style={styles.statItem}>
-              <Label text="Total Earnings" size={12} color="#888888" />
-              <Label text="$90" size={24} weight="bold" color="#23C28C" />
+              <Label text="Available" size={12} color="#888888" />
+              <Label
+                text={`$${formatCurrency(availableBalance)}`}
+                size={20}
+                weight="bold"
+                color="#23C28C"
+              />
             </View>
           </View>
 
@@ -215,7 +317,7 @@ const WalletScreen: React.FC = () => {
               style={styles.fieldLabel}
             />
             <InputField
-              placeholder="Min ₹100"
+              placeholder="Min $100"
               value={withdrawAmount}
               onChangeText={setWithdrawAmount}
               keyboardType="numeric"
@@ -223,23 +325,97 @@ const WalletScreen: React.FC = () => {
             />
 
             <Label
-              text="Add Your UPI ID"
+              text="Payout Method"
               size={14}
               color="#666666"
               style={styles.fieldLabel}
             />
-            <InputField
-              placeholder="Type or Paste your UPI ID"
-              value={upiId}
-              onChangeText={setUpiId}
-              containerStyle={styles.inputContainer}
-            />
+            <TouchableOpacity
+              style={styles.methodSelector}
+              onPress={() => setMethodSheetVisible(true)}>
+              <Label
+                text={PAYOUT_METHODS.find((m) => m.id === selectedMethod)?.label || 'Select'}
+                size={14}
+                color="#1A1A1A"
+              />
+              <Image source={images.rightArrow} style={styles.dropdownArrow} />
+            </TouchableOpacity>
+
+            {/* Account Details based on method */}
+            {selectedMethod === 'UPI' && (
+              <>
+                <Label
+                  text="UPI ID"
+                  size={14}
+                  color="#666666"
+                  style={styles.fieldLabel}
+                />
+                <InputField
+                  placeholder="yourname@upi"
+                  value={upiId}
+                  onChangeText={setUpiId}
+                  containerStyle={styles.inputContainer}
+                  autoCapitalize="none"
+                />
+              </>
+            )}
+
+            {selectedMethod === 'PAYPAL' && (
+              <>
+                <Label
+                  text="PayPal Email"
+                  size={14}
+                  color="#666666"
+                  style={styles.fieldLabel}
+                />
+                <InputField
+                  placeholder="your@email.com"
+                  value={paypalEmail}
+                  onChangeText={setPaypalEmail}
+                  keyboardType="email-address"
+                  containerStyle={styles.inputContainer}
+                  autoCapitalize="none"
+                />
+              </>
+            )}
+
+            {selectedMethod === 'CRYPTO' && (
+              <>
+                <Label
+                  text="Wallet Address"
+                  size={14}
+                  color="#666666"
+                  style={styles.fieldLabel}
+                />
+                <InputField
+                  placeholder="0x..."
+                  value={cryptoAddress}
+                  onChangeText={setCryptoAddress}
+                  containerStyle={styles.inputContainer}
+                  autoCapitalize="none"
+                />
+                <Label
+                  text="Network"
+                  size={14}
+                  color="#666666"
+                  style={styles.fieldLabel}
+                />
+                <InputField
+                  placeholder="ETH, BTC, etc."
+                  value={cryptoNetwork}
+                  onChangeText={setCryptoNetwork}
+                  containerStyle={styles.inputContainer}
+                  autoCapitalize="characters"
+                />
+              </>
+            )}
 
             <Button
-              title="WITHDRAW"
+              title={isWithdrawing ? 'Processing...' : 'WITHDRAW'}
               onPress={handleWithdraw}
               variant="primary"
               style={styles.withdrawButton}
+              disabled={isWithdrawDisabled() || isWithdrawing}
             />
           </View>
 
@@ -252,19 +428,59 @@ const WalletScreen: React.FC = () => {
                 weight="bold"
                 color="#1A1A1A"
               />
-              <TouchableOpacity onPress={() => navigation.navigate('TransactionsModal' as any)}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('TransactionsModal' as any)}>
                 <Label text="See All" size={14} color="#23C28C" />
               </TouchableOpacity>
             </View>
 
-            {sampleTransactions.map(transaction => (
-              <View key={transaction.id}>
-                {renderTransactionItem({ item: transaction })}
+            {isLoadingTransactions ? (
+              <ActivityIndicator
+                size="small"
+                color="#23C28C"
+                style={{paddingVertical: s(20)}}
+              />
+            ) : transactions.length === 0 ? (
+              <View style={styles.emptyTransactions}>
+                <Label text="No transactions yet" size={14} color="#888888" />
               </View>
-            ))}
+            ) : (
+              transactions.map((transaction) => (
+                <View key={transaction.id}>
+                  {renderTransactionItem({item: transaction})}
+                </View>
+              ))
+            )}
           </View>
         </ScrollView>
       </WhiteCard>
+
+      {/* Payout Method Sheet */}
+      <BottomSheet
+        visible={methodSheetVisible}
+        onClose={() => setMethodSheetVisible(false)}
+        title="Select Payout Method">
+        {PAYOUT_METHODS.map((method) => (
+          <TouchableOpacity
+            key={method.id}
+            style={[
+              styles.methodOption,
+              selectedMethod === method.id && styles.methodOptionSelected,
+            ]}
+            onPress={() => {
+              setSelectedMethod(method.id);
+              setMethodSheetVisible(false);
+            }}>
+            <View style={styles.methodIconContainer}>
+              <Image source={images.paymentMethod} style={styles.methodIcon} />
+            </View>
+            <Label text={method.label} size={16} color="#1A1A1A" />
+            {selectedMethod === method.id && (
+              <Label text="✓" size={20} weight="bold" color="#23C28C" style={styles.checkIcon} />
+            )}
+          </TouchableOpacity>
+        ))}
+      </BottomSheet>
     </Container>
   );
 };
@@ -276,33 +492,6 @@ const createStyles = (theme: Theme) =>
       paddingTop: s(16),
       paddingBottom: 0,
     },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingTop: s(40),
-      paddingBottom: s(16),
-    },
-    logo: {
-      width: s(100),
-      height: s(35),
-      resizeMode: 'contain',
-    },
-    headerIcons: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: s(8),
-    },
-    headerIcon: {
-      width: s(36),
-      height: s(36),
-      resizeMode: 'contain',
-    },
-    avatar: {
-      width: s(40),
-      height: s(40),
-      resizeMode: 'contain',
-    },
     scrollContent: {
       paddingBottom: s(30),
     },
@@ -313,21 +502,6 @@ const createStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       marginTop: s(8),
-    },
-    balanceIconContainer: {
-      width: s(32),
-      height: s(32),
-      borderRadius: s(16),
-      borderWidth: 2,
-      borderColor: '#1A1A1A',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: s(10),
-    },
-    dollarIcon: {
-      fontSize: s(16),
-      fontWeight: 'bold',
-      color: '#1A1A1A',
     },
     balanceTextContainer: {
       flex: 1,
@@ -376,6 +550,18 @@ const createStyles = (theme: Theme) =>
     inputContainer: {
       marginBottom: s(16),
     },
+    methodSelector: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: theme.colors.inputBg,
+      borderRadius: s(30),
+      paddingHorizontal: s(16),
+      paddingVertical: s(14),
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      marginBottom: s(16),
+    },
     withdrawButton: {
       marginTop: s(8),
     },
@@ -415,13 +601,22 @@ const createStyles = (theme: Theme) =>
     earningsIcon: {
       backgroundColor: '#E8F5E9',
     },
-    withdrawArrowContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+    transactionIconImage: {
+      width: s(20),
+      height: s(20),
+      resizeMode: 'contain',
     },
-    smallArrow: {
-      marginLeft: s(-4),
-      marginTop: s(-6),
+    dropdownArrow: {
+      width: s(16),
+      height: s(16),
+      resizeMode: 'contain',
+      tintColor: '#888888',
+      transform: [{rotate: '90deg'}],
+    },
+    methodIcon: {
+      width: s(24),
+      height: s(24),
+      resizeMode: 'contain',
     },
     transactionDetails: {
       flex: 1,
@@ -438,6 +633,33 @@ const createStyles = (theme: Theme) =>
     },
     positiveAmount: {
       color: '#4CAF50',
+    },
+    emptyTransactions: {
+      paddingVertical: s(20),
+      alignItems: 'center',
+    },
+    // Method sheet styles
+    methodOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: s(16),
+      borderBottomWidth: 1,
+      borderBottomColor: '#F5F5F5',
+    },
+    methodOptionSelected: {
+      backgroundColor: '#F5FFF9',
+    },
+    methodIconContainer: {
+      width: s(40),
+      height: s(40),
+      borderRadius: s(20),
+      backgroundColor: '#F5F5F5',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: s(14),
+    },
+    checkIcon: {
+      marginLeft: 'auto',
     },
   });
 

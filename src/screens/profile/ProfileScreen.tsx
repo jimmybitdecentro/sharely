@@ -1,28 +1,25 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   Image,
   Modal,
+  ImageSourcePropType,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useSelector, useDispatch } from 'react-redux';
-import Feather from '@react-native-vector-icons/feather';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import Container from '../../components/layouts/Container/Container';
 import FormCard from '../../components/common/FormCard/FormCard';
 import Label from '../../components/base/Label/Label';
-import { useTheme } from '../../hooks/useTheme';
-import { RootStackParamList } from '../../types/navigation';
-import { Theme } from '../../types/theme';
-import { RootState } from '../../store';
-import { logout } from '../../store/slices/authSlice';
-import { storageService } from '../../services/storage/storageService';
-import { s } from '../../theme/size';
-import { images } from '../../theme/images';
-import { ActionBar } from '../../components/common/Headers/ActionBar';
+import {useTheme} from '../../hooks/useTheme';
+import {useAuth} from '../../hooks/useAuth';
+import {RootStackParamList} from '../../types/navigation';
+import {Theme} from '../../types/theme';
+import {s} from '../../theme/size';
+import {images} from '../../theme/images';
+import {ActionBar} from '../../components/common/Headers/ActionBar';
 import IVCircle from '../../components/base/ImageView/IVCircle';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -30,7 +27,7 @@ type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 interface MenuItem {
   key: string;
   label: string;
-  icon: string;
+  icon: ImageSourcePropType;
   screen?: keyof RootStackParamList;
   action?: () => void;
   isLogout?: boolean;
@@ -38,9 +35,8 @@ interface MenuItem {
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const dispatch = useDispatch();
-  const { theme } = useTheme();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const {theme} = useTheme();
+  const {user, logout, isLoading} = useAuth();
   const styles = createStyles(theme);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -50,9 +46,7 @@ const ProfileScreen: React.FC = () => {
 
   const handleConfirmLogout = async () => {
     setShowLogoutModal(false);
-    await storageService.removeAuthToken();
-    await storageService.removeUserData();
-    dispatch(logout());
+    await logout();
   };
 
   const handleCancelLogout = () => {
@@ -60,20 +54,19 @@ const ProfileScreen: React.FC = () => {
   };
 
   const menuItems: MenuItem[] = [
-    { key: 'editProfile', label: 'Edit Profile', icon: 'user', screen: 'EditProfileModal' },
-    { key: 'paymentMethods', label: 'Payment Methods', icon: 'credit-card' },
-    { key: 'preferences', label: 'Preferences', icon: 'sliders', screen: 'PreferencesModal' },
-    { key: 'referral', label: 'Referral', icon: 'user-plus', screen: 'ReferralModal' },
-    { key: 'helpSupport', label: 'Help & Support', icon: 'help-circle' ,screen: 'HelpSupport' as keyof RootStackParamList},
-    { key: 'transaction', label: 'Transaction', icon: 'list' ,screen: 'Transactions' as keyof RootStackParamList},
-    { key: 'logout', label: 'Log out', icon: 'log-out', action: handleLogoutPress, isLogout: true },
+    {key: 'editProfile', label: 'Edit Profile', icon: images.editProfile, screen: 'EditProfileModal'},
+    {key: 'paymentMethods', label: 'Payment Methods', icon: images.paymentMethod},
+    {key: 'preferences', label: 'Preferences', icon: images.preferences, screen: 'PreferencesModal'},
+    {key: 'referral', label: 'Referral', icon: images.referral, screen: 'ReferralModal'},
+    {key: 'helpSupport', label: 'Help & Support', icon: images.help, screen: 'HelpSupportModal'},
+    {key: 'transaction', label: 'Transaction', icon: images.transaction, screen: 'TransactionsModal'},
+    {key: 'logout', label: 'Log out', icon: images.logout, action: handleLogoutPress, isLogout: true},
   ];
 
   const handleMenuPress = (item: MenuItem) => {
     if (item.action) {
       item.action();
     } else if (item.screen) {
-      // Navigate to the modal screen (no tab bar)
       navigation.navigate(item.screen as any);
     }
   };
@@ -86,16 +79,9 @@ const ProfileScreen: React.FC = () => {
         index === menuItems.length - 1 && styles.menuItemLast,
       ]}
       onPress={() => handleMenuPress(item)}
-      activeOpacity={0.7}
-    >
+      activeOpacity={0.7}>
       <View style={styles.menuItemLeft}>
-        <View style={[styles.menuIconContainer, item.isLogout && styles.logoutIconContainer]}>
-          <Feather
-            name={item.icon as any}
-            size={s(20)}
-            color={item.isLogout ? '#EF5350' : '#666666'}
-          />
-        </View>
+        <Image source={item.icon} style={styles.menuIcon} />
         <Label
           text={item.label}
           size={15}
@@ -104,42 +90,52 @@ const ProfileScreen: React.FC = () => {
         />
       </View>
       {!item.isLogout && (
-        <Feather name="chevron-right" size={s(20)} color="#CCCCCC" />
+        <Image source={images.rightArrow} style={styles.arrowIcon} />
       )}
     </TouchableOpacity>
   );
 
   return (
     <Container style={styles.container}>
-    <ActionBar title="My Profile" onBackPress={() => navigation.goBack()} />
+      <ActionBar title="My Profile" onBackPress={() => navigation.goBack()} />
 
       {/* Profile Info */}
       <View style={styles.profileSection}>
-       <IVCircle size={80} src={images.profile} />
+        <IVCircle size={80} src={images.profile} />
         <Label
-          text={user?.name || 'John Deo'}
+          text={user?.name || 'User'}
           size={20}
           weight="bold"
           color="#FFFFFF"
           style={styles.userName}
         />
         <Label
-          text="Member since Jun 2022"
+          text={user?.email || ''}
           size={14}
-          color="#23C28C"
-          style={styles.memberSince}
+          color="#AAAAAA"
+          style={styles.userEmail}
         />
+        {user?.referralCode && (
+          <View style={styles.referralBadge}>
+            <Image source={images.referral} style={styles.referralBadgeIcon} />
+            <Label
+              text={`Referral: ${user.referralCode}`}
+              size={12}
+              color="#23C28C"
+              style={{marginLeft: s(4)}}
+            />
+          </View>
+        )}
       </View>
 
       {/* Menu Card */}
       <FormCard
         title=""
         buttonText=""
-        onSubmit={() => { }}
+        onSubmit={() => {}}
         showButton={false}
         position="belowHeader"
-        cardStyle={styles.formCardStyle}
-      >
+        cardStyle={styles.formCardStyle}>
         <View style={styles.menuContent}>
           {menuItems.map((item, index) => renderMenuItem(item, index))}
         </View>
@@ -150,14 +146,11 @@ const ProfileScreen: React.FC = () => {
         visible={showLogoutModal}
         transparent
         animationType="slide"
-        onRequestClose={handleCancelLogout}
-      >
+        onRequestClose={handleCancelLogout}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {/* Logout Icon */}
-            <View style={styles.logoutModalIcon}>
-              <Feather name="log-out" size={s(32)} color="#EF5350" />
-            </View>
+            <Image source={images.logout} style={styles.modalLogoutImage} />
 
             {/* Title */}
             <Label
@@ -181,8 +174,7 @@ const ProfileScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={handleCancelLogout}
-                activeOpacity={0.8}
-              >
+                activeOpacity={0.8}>
                 <Label text="NO" size={16} weight="bold" color="#1A1A1A" />
               </TouchableOpacity>
 
@@ -190,14 +182,13 @@ const ProfileScreen: React.FC = () => {
                 style={styles.confirmButton}
                 onPress={handleConfirmLogout}
                 activeOpacity={0.8}
-              >
+                disabled={isLoading}>
                 <LinearGradient
                   colors={['#2C73D2', '#23C28C']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.confirmButtonGradient}
-                >
-                  <Label text="YES" size={16} weight="bold" color="#FFFFFF" />
+                  start={{x: 0, y: 0}}
+                  end={{x: 1, y: 0}}
+                  style={styles.confirmButtonGradient}>
+                  <Label text={isLoading ? '...' : 'YES'} size={16} weight="bold" color="#FFFFFF" />
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -215,48 +206,30 @@ const createStyles = (theme: Theme) =>
       paddingTop: s(16),
       paddingBottom: 0,
     },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingTop: s(40),
-      paddingBottom: s(20),
-    },
-    backButton: {
-      width: s(44),
-      height: s(44),
-      borderRadius: s(22),
-      backgroundColor: '#23C28C',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    headerPlaceholder: {
-      width: s(44),
-    },
     profileSection: {
       alignItems: 'center',
       paddingTop: s(10),
       paddingBottom: s(16),
     },
-    avatarContainer: {
-      width: s(100),
-      height: s(100),
-      borderRadius: s(50),
-      backgroundColor: '#4A90D9',
-      justifyContent: 'center',
-      alignItems: 'center',
-      overflow: 'hidden',
-    },
-    avatar: {
-      width: s(100),
-      height: s(100),
-      borderRadius: s(50),
-    },
     userName: {
       marginTop: s(12),
     },
-    memberSince: {
+    userEmail: {
       marginTop: s(4),
+    },
+    referralBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: s(8),
+      backgroundColor: 'rgba(35, 194, 140, 0.1)',
+      paddingHorizontal: s(12),
+      paddingVertical: s(6),
+      borderRadius: s(16),
+    },
+    referralBadgeIcon: {
+      width: s(18),
+      height: s(18),
+      resizeMode: 'contain',
     },
     formCardStyle: {
       overflow: 'hidden',
@@ -281,17 +254,16 @@ const createStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
     },
-    menuIconContainer: {
+    menuIcon: {
       width: s(40),
       height: s(40),
-      borderRadius: s(20),
-      backgroundColor: '#F5F5F5',
-      justifyContent: 'center',
-      alignItems: 'center',
+      resizeMode: 'contain',
       marginRight: s(14),
     },
-    logoutIconContainer: {
-      backgroundColor: '#FFEBEE',
+    arrowIcon: {
+      width: s(16),
+      height: s(8),
+      resizeMode: 'contain',
     },
     // Modal styles
     modalOverlay: {
@@ -308,13 +280,10 @@ const createStyles = (theme: Theme) =>
       paddingBottom: s(40),
       alignItems: 'center',
     },
-    logoutModalIcon: {
+    modalLogoutImage: {
       width: s(70),
       height: s(70),
-      borderRadius: s(35),
-      backgroundColor: '#FFEBEE',
-      justifyContent: 'center',
-      alignItems: 'center',
+      resizeMode: 'contain',
       marginBottom: s(20),
     },
     modalTitle: {

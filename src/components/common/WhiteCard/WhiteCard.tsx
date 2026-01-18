@@ -6,7 +6,9 @@ interface WhiteCardProps {
   children: React.ReactNode;
   topBorderRadius?: number;
   bottomBorderRadius?: number;
-  padding?: number | { horizontal?: number; vertical?: number; top?: number; bottom?: number };
+  padding?:
+    | number
+    | { horizontal?: number; vertical?: number; top?: number; bottom?: number };
   marginTop?: number;
   style?: ViewStyle;
   contentContainerStyle?: ViewStyle;
@@ -25,14 +27,12 @@ const WhiteCard: React.FC<WhiteCardProps> = ({
     topBorderRadius,
     bottomBorderRadius,
     padding,
-    marginTop
+    marginTop,
   );
 
   return (
     <View style={[styles.whiteCard, style]}>
-      <View style={[styles.content, contentContainerStyle]}>
-        {children}
-      </View>
+      <View style={[styles.content, contentContainerStyle]}>{children}</View>
     </View>
   );
 };
@@ -40,8 +40,10 @@ const WhiteCard: React.FC<WhiteCardProps> = ({
 const createStyles = (
   topBorderRadius: number,
   bottomBorderRadius: number | undefined,
-  padding: number | { horizontal?: number; vertical?: number; top?: number; bottom?: number },
-  marginTop: number
+  padding:
+    | number
+    | { horizontal?: number; vertical?: number; top?: number; bottom?: number },
+  marginTop: number,
 ) => {
   const paddingHorizontal =
     typeof padding === 'number' ? padding : padding.horizontal || 16;
@@ -63,6 +65,7 @@ const createStyles = (
         borderBottomRightRadius: s(bottomBorderRadius),
       }),
       marginTop: s(marginTop),
+      marginBottom: bottomBorderRadius ? s(30) : 0,
     },
     content: {
       flex: 1,
@@ -75,4 +78,3 @@ const createStyles = (
 };
 
 export default WhiteCard;
-

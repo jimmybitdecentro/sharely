@@ -1,36 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch } from 'react-redux';
+import React, {useState, useRef, useEffect} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
+import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import Container from '../../components/layouts/Container/Container';
 import FormCard from '../../components/common/FormCard/FormCard';
-import { useTheme } from '../../hooks/useTheme';
-import { AuthStackParamList } from '../../types/navigation';
-import { setCredentials } from '../../store/slices/authSlice';
-import { storageService } from '../../services/storage/storageService';
-import { Theme } from '../../types/theme';
-import { s } from '../../theme/size';
+import {useTheme} from '../../hooks/useTheme';
+import {useAuth} from '../../hooks/useAuth';
+import {AuthStackParamList} from '../../types/navigation';
+import {Theme} from '../../types/theme';
+import {s} from '../../theme/size';
 import IVLogo from '../../components/base/ImageView/IVLogo';
 import IVCircle from '../../components/base/ImageView/IVCircle';
-import { images } from '../../theme/images';
+import {images} from '../../theme/images';
 
-type OtpScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'OtpVerification'>;
+type OtpScreenNavigationProp = StackNavigationProp<
+  AuthStackParamList,
+  'OtpVerification'
+>;
 type OtpScreenRouteProp = RouteProp<AuthStackParamList, 'OtpVerification'>;
 
 const GRADIENT_COLORS = ['#2C73D2', '#1A88B3', '#23C28C'];
-const OTP_LENGTH = 4;
+const OTP_LENGTH = 6; // Updated to 6 digits per API documentation
 
 const OtpVerificationScreen: React.FC = () => {
   const navigation = useNavigation<OtpScreenNavigationProp>();
   const route = useRoute<OtpScreenRouteProp>();
-  const dispatch = useDispatch();
-  const { theme } = useTheme();
+  const {theme} = useTheme();
   const styles = createStyles(theme);
+  const {verifyOTP, sendOTP, isLoading: isAuthLoading} = useAuth();
 
-  const { email } = route.params;
+  const {email, referral} = route.params;
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,17 +61,35 @@ const OtpVerificationScreen: React.FC = () => {
 
   // Handle OTP input change
   const handleOtpChange = (value: string, index: number) => {
-    if (value.length > 1) {
-      value = value[value.length - 1];
+    // Only allow numeric input
+    if (value && !/^\d+$/.test(value)) {
+      return;
     }
 
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-    setError(null);
+    if (value.length > 1) {
+      // Handle paste
+      const pastedOtp = value.slice(0, OTP_LENGTH).split('');
+      const newOtp = [...otp];
+      pastedOtp.forEach((digit, i) => {
+        if (index + i < OTP_LENGTH) {
+          newOtp[index + i] = digit;
+        }
+      });
+      setOtp(newOtp);
+      // Focus on next empty or last input
+      const nextEmptyIndex = newOtp.findIndex((d) => !d);
+      const focusIndex =
+        nextEmptyIndex === -1 ? OTP_LENGTH - 1 : nextEmptyIndex;
+      inputRefs.current[focusIndex]?.focus();
+    } else {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+      setError(null);
 
-    if (value && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
+      if (value && index < OTP_LENGTH - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
     }
   };
 
@@ -87,20 +112,17 @@ const OtpVerificationScreen: React.FC = () => {
     setIsSubmitting(true);
     setError(null);
 
-    try {
-      console.log('Verifying OTP:', otpValue, 'for email:', email);
-      await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+    const result = await verifyOTP({
+      email,
+      otp: otpValue,
+    });
 
-      await storageService.setItem('@sharely:has_seen_onboarding', true);
-      dispatch(setCredentials({
-        token: 'dummy-token',
-        user: { id: '1', name: 'Guest', email }
-      }));
-    } catch (err) {
-      setError('Invalid OTP. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setError(result.error || 'Invalid OTP. Please try again.');
     }
+    // If successful, the auth state will update and navigation will happen automatically
   };
 
   // Resend OTP
@@ -111,17 +133,20 @@ const OtpVerificationScreen: React.FC = () => {
     setTimer(30);
     setOtp(Array(OTP_LENGTH).fill(''));
     setError(null);
-    console.log('Resending OTP to:', email);
+
+    await sendOTP({email});
+    inputRefs.current[0]?.focus();
   };
 
   // Gradient text for logo
-  const GradientText = ({ text, style }: { text: string; style?: any }) => (
-    <MaskedView maskElement={<Text style={[styles.logoText, style]}>{text}</Text>}>
+  const GradientText = ({text, style}: {text: string; style?: any}) => (
+    <MaskedView
+      maskElement={<Text style={[styles.logoText, style]}>{text}</Text>}>
       <LinearGradient
         colors={GRADIENT_COLORS}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}>
-        <Text style={[styles.logoText, style, { opacity: 0 }]}>{text}</Text>
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 0}}>
+        <Text style={[styles.logoText, style, {opacity: 0}]}>{text}</Text>
       </LinearGradient>
     </MaskedView>
   );
@@ -138,24 +163,28 @@ const OtpVerificationScreen: React.FC = () => {
     </View>
   );
 
-
+  const isButtonLoading = isSubmitting || isAuthLoading;
 
   return (
     <Container style={styles.container}>
       {/* Header - same as Login screen */}
       <View style={styles.header}>
-       <IVCircle size={40} src={images.back_white} onPress={() => navigation.goBack()} />
-       <IVLogo />
+        <IVCircle
+          size={40}
+          src={images.back_white}
+          onPress={() => navigation.goBack()}
+        />
+        <IVLogo />
       </View>
       {/* Center wrapper for FormCard */}
       <View style={styles.centerWrapper}>
         <FormCard
           title="Email Verification"
-          subtitle={`Enter the code we’ve sent to your email ${email}`}
+          subtitle={`Enter the 6-digit code we've sent to ${email}`}
           position="center"
           buttonText="VERIFY OTP"
           onSubmit={handleVerifyOtp}
-          isSubmitting={isSubmitting}
+          isSubmitting={isButtonLoading}
           footerComponent={<OtpFooter />}
           renderContent={() => (
             <>
@@ -175,11 +204,11 @@ const OtpVerificationScreen: React.FC = () => {
                       onChangeText={(value) => handleOtpChange(value, index)}
                       onKeyPress={(e) => handleKeyPress(e, index)}
                       keyboardType="number-pad"
-                      maxLength={1}
+                      maxLength={index === 0 ? OTP_LENGTH : 1} // Allow paste on first input
                       selectTextOnFocus
+                      editable={!isButtonLoading}
                     />
                   ))}
-
                 </View>
 
                 {/* Error message */}
@@ -188,7 +217,9 @@ const OtpVerificationScreen: React.FC = () => {
               <View style={styles.resendContainer}>
                 <Text style={styles.resendText}>Didn't receive the code? </Text>
                 {canResend ? (
-                  <TouchableOpacity onPress={handleResendOtp}>
+                  <TouchableOpacity
+                    onPress={handleResendOtp}
+                    disabled={isButtonLoading}>
                     <Text style={styles.resendLink}>Resend OTP</Text>
                   </TouchableOpacity>
                 ) : (
@@ -209,10 +240,10 @@ const createStyles = (theme: Theme) =>
       padding: s(19),
     },
     header: {
-     flexDirection: 'row',
-     alignItems: 'center',
-     gap: s(10),
-     marginBottom: s(10),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: s(10),
+      marginBottom: s(10),
     },
     centerWrapper: {
       flex: 1,
@@ -242,9 +273,9 @@ const createStyles = (theme: Theme) =>
       justifyContent: 'space-between',
     },
     otpInput: {
-      width: s(65),
+      width: s(45),
       height: s(48),
-      borderRadius: s(30),
+      borderRadius: s(12),
       backgroundColor: theme.colors.inputBg,
       borderWidth: s(1),
       borderColor: theme.colors.border,
@@ -264,6 +295,7 @@ const createStyles = (theme: Theme) =>
       fontSize: s(12),
       fontFamily: theme.fonts.regular,
       marginTop: s(8),
+      textAlign: 'center',
     },
     footerContainer: {
       marginTop: theme.spacing.lg,
@@ -272,7 +304,6 @@ const createStyles = (theme: Theme) =>
       flexDirection: 'row',
       justifyContent: 'flex-end',
       alignItems: 'center',
-      // marginBottom: theme.spacing.md,
       marginTop: theme.spacing.md,
     },
     resendText: {

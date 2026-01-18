@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
@@ -9,6 +9,7 @@ import FormCard from '../../components/common/FormCard/FormCard';
 import InputField from '../../components/base/InputField/InputField';
 import { useTheme } from '../../hooks/useTheme';
 import { useLoginForm } from '../../hooks/useLoginForm';
+import { useAuth } from '../../hooks/useAuth';
 import { AuthStackParamList } from '../../types/navigation';
 import { LoginFormData } from '../../validations/loginSchema';
 import { Theme } from '../../types/theme';
@@ -23,6 +24,8 @@ const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const { theme } = useTheme();
   const styles = createStyles(theme);
+  const { sendOTP, signInWithGoogle, isLoading: isAuthLoading } = useAuth();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const {
     formData,
@@ -35,21 +38,42 @@ const LoginScreen: React.FC = () => {
 
   // Handles OTP request after validation - navigates to OTP screen
   const handleSendOtp = async (data: LoginFormData) => {
-    console.log('Send OTP for:', data.email);
-    await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
-    
-    // TODO: Call your send OTP API here
-    // await apiService.sendOtp(data.email);
-    
-    // Navigate to OTP verification screen
-    navigation.navigate('OtpVerification', { 
-      email: data.email, 
-      referral: data.referral || undefined 
-    });
+    const result = await sendOTP({ email: data.email });
+
+    if (result.success) {
+      // Navigate to OTP verification screen
+      navigation.navigate('OtpVerification', {
+        email: data.email,
+        referral: data.referral || undefined,
+      });
+    }
   };
 
   const onFormSubmit = () => {
     handleSubmit(handleSendOtp);
+  };
+
+  // Handle Google Sign-In
+  const handleGoogleSignIn = async () => {
+    console.log('[LoginScreen] handleGoogleSignIn pressed');
+    setIsGoogleLoading(true);
+    try {
+      console.log('[LoginScreen] Calling signInWithGoogle...');
+      const result = await signInWithGoogle();
+      console.log('[LoginScreen] signInWithGoogle result:', JSON.stringify(result, null, 2));
+
+      if (result.success) {
+        console.log('[LoginScreen] Google Sign-In successful');
+      } else if (result.error) {
+        console.error('[LoginScreen] Google sign-in failed with error:', result.error);
+        Alert.alert('Sign-In Error', result.error);
+      }
+    } catch (error: any) {
+      console.error('[LoginScreen] Unexpected error during Google sign-in:', error);
+      Alert.alert('Unexpected Error', error.message || 'An unexpected error occurred');
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   // Gradient text component for "Sharely" logo
@@ -73,7 +97,7 @@ const LoginScreen: React.FC = () => {
           <Text style={styles.termsLink}>Terms & Conditions</Text>
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>Don't have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
@@ -91,9 +115,37 @@ const LoginScreen: React.FC = () => {
     </View>
   );
 
+  // Google Sign-In Button Component
+  const GoogleSignInButton = () => (
+    <TouchableOpacity
+      style={styles.googleButton}
+      onPress={handleGoogleSignIn}
+      disabled={isGoogleLoading || isButtonLoading}
+      activeOpacity={0.8}>
+      <View style={styles.googleButtonContent}>
+        {isGoogleLoading ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <Text style={styles.googleButtonText}>Continue with Google</Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
+  // Divider Component
+  const Divider = () => (
+    <View style={styles.dividerContainer}>
+      <View style={styles.dividerLine} />
+      <Text style={styles.dividerText}>OR</Text>
+      <View style={styles.dividerLine} />
+    </View>
+  );
+
+  const isButtonLoading = isSubmitting || isAuthLoading;
+
   return (
     <Container style={styles.container}>
-      <IVLogo /> 
+      <IVLogo mt={Platform?.OS === 'android' ? s(20) : 0} />
       <View style={styles.centerWrapper}>
         <FormCard
           title="Welcome Back!"
@@ -101,7 +153,7 @@ const LoginScreen: React.FC = () => {
           position="center"
           buttonText="SEND OTP"
           onSubmit={onFormSubmit}
-          isSubmitting={isSubmitting}
+          isSubmitting={isButtonLoading}
           footerComponent={<TermsFooter />}
           renderContent={() => (
             <>
@@ -117,6 +169,7 @@ const LoginScreen: React.FC = () => {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  editable={!isButtonLoading}
                 />
               </View>
 
@@ -129,8 +182,15 @@ const LoginScreen: React.FC = () => {
                   onChangeText={(text) => handleInputChange('referral', text)}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  editable={!isButtonLoading}
                 />
               </View>
+
+              {/* Divider */}
+              <Divider />
+
+              {/* Google Sign-In Button */}
+              <GoogleSignInButton />
             </>
           )}
         />
@@ -210,6 +270,43 @@ const createStyles = (theme: Theme) =>
       fontSize: s(14),
       fontFamily: theme.fonts.semiBold,
       color: '#23C28C',
+    },
+    dividerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: theme.spacing.md,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: '#E0E0E0',
+    },
+    dividerText: {
+      marginHorizontal: theme.spacing.md,
+      fontSize: s(14),
+      fontFamily: theme.fonts.regular,
+      color: theme.colors.textSecondary,
+    },
+    googleButton: {
+      width: '100%',
+      height: s(50),
+      borderRadius: s(25),
+      backgroundColor: '#4285F4',
+      overflow: 'hidden',
+      marginTop: theme.spacing.sm,
+    },
+    googleButtonContent: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.md,
+    },
+    googleButtonText: {
+      fontSize: s(16),
+      fontFamily: theme.fonts.semiBold,
+      color: '#FFFFFF',
+      fontWeight: '600',
     },
   });
 

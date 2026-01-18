@@ -17,7 +17,10 @@ import IVLogo from '../../components/base/ImageView/IVLogo';
 import IVCircle from '../../components/base/ImageView/IVCircle';
 import { images } from '../../theme/images';
 
-type SignupScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Signup'>;
+type SignupScreenNavigationProp = StackNavigationProp<
+  AuthStackParamList,
+  'Signup'
+>;
 
 const OCCUPATION_OPTIONS = [
   { label: 'Student', value: 'student' },
@@ -67,7 +70,7 @@ const SignupScreen: React.FC = () => {
 
   const handleSignup = async (data: SignupFormData) => {
     console.log('Signup form submitted:', data);
-    await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+    await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
   };
 
   const onFormSubmit = () => {
@@ -77,8 +80,12 @@ const SignupScreen: React.FC = () => {
   return (
     <Container style={styles.container}>
       <View style={styles.header}>
-       <IVCircle size={40} src={images.back_white} onPress={() => navigation.goBack()} />
-       <IVLogo />
+        <IVCircle
+          size={40}
+          src={images.back_white}
+          onPress={() => navigation.goBack()}
+        />
+        <IVLogo />
       </View>
 
       <FormCard
@@ -91,86 +98,86 @@ const SignupScreen: React.FC = () => {
         renderContent={({ styles: formStyles }) => (
           <>
             <View style={formStyles.formGroup}>
-            <InputField
-              placeholder="Type your Legal Name here..."
-              value={formData.fullName}
-              onChangeText={(text) => handleInputChange('fullName', text)}
+              <InputField
+                placeholder="Type your Legal Name here..."
+                value={formData.fullName}
+                onChangeText={text => handleInputChange('fullName', text)}
                 onBlur={() => handleBlur('fullName')}
                 error={getFieldError('fullName')}
                 style={formStyles.input}
                 autoCapitalize="words"
                 autoCorrect={false}
                 label="What Should We Call You?"
-            />
-          </View>
+              />
+            </View>
 
             <View style={formStyles.formGroup}>
-            <Dropdown
+              <Dropdown
                 label="Choose Your Occupation"
-              placeholder="Select your Occupation..."
+                placeholder="Select your Occupation..."
                 data={OCCUPATION_OPTIONS}
-              value={formData.occupation}
-              onSelect={(value) => handleInputChange('occupation', value)}
+                value={formData.occupation}
+                onSelect={value => handleInputChange('occupation', value)}
                 error={getFieldError('occupation')}
-            />
-          </View>
+              />
+            </View>
 
             <View style={formStyles.formGroup}>
-            <Dropdown
+              <Dropdown
                 label="Choose Your Interests"
-              placeholder="Select your Interest..."
+                placeholder="Select your Interest..."
                 data={INTERESTS_OPTIONS}
-              value={formData.interests}
-              onSelect={(value) => handleInputChange('interests', value)}
+                value={formData.interests}
+                onSelect={value => handleInputChange('interests', value)}
                 error={getFieldError('interests')}
-            />
-          </View>
+              />
+            </View>
 
             <View style={formStyles.formGroup}>
-            <Dropdown
-                label="Tell Us Your Age"  
-              placeholder="Select your Age..."
+              <Dropdown
+                label="Tell Us Your Age"
+                placeholder="Select your Age..."
                 data={AGE_OPTIONS}
-              value={formData.age}
-              onSelect={(value) => handleInputChange('age', value)}
+                value={formData.age}
+                onSelect={value => handleInputChange('age', value)}
                 error={getFieldError('age')}
-            />
-          </View>
+              />
+            </View>
 
             <View style={formStyles.formGroup}>
-            <RadioGroup
-              label="How Do You Identify Yourself ?"
+              <RadioGroup
+                label="How Do You Identify Yourself ?"
                 options={GENDER_OPTIONS}
-              value={formData.gender}
-              onChange={(value) => handleInputChange('gender', value)}
+                value={formData.gender}
+                onChange={value => handleInputChange('gender', value)}
                 error={getFieldError('gender')}
-            />
-          </View>
+              />
+            </View>
 
             <View style={formStyles.formGroup}>
               <Text style={formStyles.fieldLabel}>Where Do You Live ?</Text>
               <View style={formStyles.row}>
-              <Dropdown
-                placeholder="Country"
+                <Dropdown
+                  placeholder="Country"
                   data={COUNTRY_OPTIONS}
-                value={formData.country}
-                onSelect={(value) => handleInputChange('country', value)}
+                  value={formData.country}
+                  onSelect={value => handleInputChange('country', value)}
                   style={formStyles.halfWidth}
                   error={getFieldError('country')}
-              />
-              <Dropdown
-                placeholder="City"
+                />
+                <Dropdown
+                  placeholder="City"
                   data={CITY_OPTIONS}
-                value={formData.city}
-                onSelect={(value) => handleInputChange('city', value)}
+                  value={formData.city}
+                  onSelect={value => handleInputChange('city', value)}
                   style={formStyles.halfWidth}
                   error={getFieldError('city')}
-              />
+                />
+              </View>
             </View>
-          </View>
           </>
         )}
-          />
+      />
     </Container>
   );
 };
@@ -183,8 +190,9 @@ const createStyles = (theme: Theme) =>
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: s(10),
-        },
+      marginVertical: s(20),
+      gap:s(20)
+    },
     backButton: {
       padding: s(10),
       backgroundColor: '#FFFFFF',

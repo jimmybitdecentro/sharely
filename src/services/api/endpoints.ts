@@ -1,36 +1,63 @@
 export const API_ENDPOINTS = {
-  // Auth
-  LOGIN: '/auth/login',
-  LOGIN_SOCIAL: '/auth/login/social',
-  SIGNUP: '/auth/signup',
-  FORGOT_PASSWORD: '/auth/forgot-password',
-  REFRESH_TOKEN: '/auth/refresh-token',
-  LOGOUT: '/auth/logout',
+  // Health Check
+  HEALTH: '/health',
 
-  // User
-  USER_PROFILE: '/user/profile',
-  UPDATE_PROFILE: '/user/profile',
-  CHANGE_PASSWORD: '/user/change-password',
+  // Authentication
+  AUTH: {
+    SEND_OTP: '/auth/sendotp',
+    VERIFY_OTP: '/auth/verifyotp',
+    REFRESH: '/auth/refresh',
+    PROFILE: '/auth/profile',
+  },
 
-  // Campaigns/Links
-  CAMPAIGNS: '/campaigns',
-  CAMPAIGN_DETAIL: (id: string) => `/campaigns/${id}`,
-  MY_LINKS: '/user/links',
-  SHARE_CAMPAIGN: (id: string) => `/campaigns/${id}/share`,
+  // Campaigns
+  CAMPAIGN: {
+    LIST: '/campaign/list',
+    DETAIL: (id: string) => `/campaign/${id}`,
+  },
 
-  // Earnings
-  EARNINGS: '/user/earnings',
-  EARNINGS_STATS: '/user/earnings/stats',
-  WITHDRAW: '/user/withdraw',
-  TRANSACTION_HISTORY: '/user/transactions',
+  // Share Links
+  SHARE: {
+    GENERATE: (campaignId: string) => `/share/generate/${campaignId}`,
+  },
 
-  // Orders
-  MY_ORDERS: '/user/orders',
-  ORDER_DETAIL: (id: string) => `/user/orders/${id}`,
+  // Tracking (redirect endpoint)
+  TRACKING: {
+    REDIRECT: (shortCode: string) => `/t/${shortCode}`,
+  },
 
-  // Notifications
-  NOTIFICATIONS: '/user/notifications',
-  NOTIFICATION_SETTINGS: '/user/notification-settings',
-  UPDATE_NOTIFICATION_SETTINGS: '/user/notification-settings',
+  // Wallet
+  WALLET: {
+    BALANCE: '/wallet/balance',
+    TRANSACTIONS: '/wallet/transactions',
+    WITHDRAW: '/wallet/withdraw',
+  },
+
+  // Referrals
+  REFERRAL: {
+    APPLY: '/referral/apply',
+    INFO: '/referral/info',
+  },
+
+  // Countries & Cities
+  LOCATION: {
+    COUNTRIES: '/countries',
+    CITIES: '/cities',
+  },
+
+  // User Profile
+  USER: {
+    PROFILE: '/users/profile',
+  },
+
+  // Publishers
+  PUBLISHER: {
+    ADVERTISEMENTS: '/publishers/advertisements',
+    ADVERTISEMENT_DETAIL: (id: string) => `/publishers/advertisements/${id}`,
+    CREATE_LINK: (id: string) => `/publishers/advertisements/${id}/create_link`,
+    MY_LINKS: '/publishers/my-links',
+  },
 } as const;
 
+// Type for endpoint strings (for type safety)
+export type EndpointKey = keyof typeof API_ENDPOINTS;

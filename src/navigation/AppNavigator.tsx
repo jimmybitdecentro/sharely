@@ -12,6 +12,8 @@ import EditProfileFormScreen from '../screens/profile/EditProfileFormScreen';
 import PreferencesScreen from '../screens/profile/PreferencesScreen';
 import ReferralScreen from '../screens/profile/ReferralScreen';
 import TransactionsScreen from '../screens/wallet/TransactionsScreen';
+import HelpSupportScreen from '../screens/profile/HelpSupportScreen';
+import NotificationsScreen from '../screens/home/NotificationsScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -73,6 +75,22 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="TransactionsModal"
               component={TransactionsScreen}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="HelpSupportModal"
+              component={HelpSupportScreen}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="NotificationsModal"
+              component={NotificationsScreen}
               options={{
                 presentation: 'card',
                 headerShown: false,

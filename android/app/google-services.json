@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "195104490042",
+    "project_id": "sharely-32a2b",
+    "storage_bucket": "sharely-32a2b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195104490042:android:b3cb8ed8dd67ba224c2b03",
+        "android_client_info": {
+          "package_name": "com.sharelyapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "195104490042-7hrh0orhh14rg6g4rkhds0d7fastquj6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sharelyapp",
+            "certificate_hash": "432cd40c9f8fa44d687635fa04015883a121e0f7"
+          }
+        },
+        {
+          "client_id": "195104490042-kgk5p5j8jto7g844uhsltoraqdpfdhc3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sharelyapp",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "195104490042-hpn88c7afqvm2iovpvu7a9p0bnaoo01t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIUOSid5mELF9Owkwsq678mgv5djf0N3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "195104490042-hpn88c7afqvm2iovpvu7a9p0bnaoo01t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -9,8 +9,8 @@ export type RootStackParamList = {
   PreferencesModal: undefined;
   ReferralModal: undefined;
   TransactionsModal: undefined;
-  HelpSupportScreen: undefined;
-  TransactionsScreen: undefined;
+  HelpSupportModal: undefined;
+  NotificationsModal: undefined;
 };
 
 export type AuthStackParamList = {
@@ -33,7 +33,9 @@ export type MainTabParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
-  ProductDetail: {productId: string}; 
+  ProductDetail: {productId: string};
+  Notifications: undefined;
+  HelpSupport: undefined;
 };
 
 export type ProfileStackParamList = {

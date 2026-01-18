@@ -7,6 +7,7 @@ import {
   ImageBackground,
   Animated,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -33,7 +34,8 @@ interface OnboardingStep {
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     title: 'Share your links and earn money',
-    description: 'Share your links and earn money when someone clicks your shared link',
+    description:
+      'Share your links and earn money when someone clicks your shared link',
     illustrations: images.onboarding1,
   },
   {
@@ -43,7 +45,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     title: 'Withdraw your funds anytime',
-    description: 'Redeem your earnings instantly via UPI straight to your bank account',
+    description:
+      'Redeem your earnings instantly via UPI straight to your bank account',
     illustrations: [images.onboarding33, images.onboarding3],
   },
 ];
@@ -52,7 +55,7 @@ const OnboardingScreen: React.FC = () => {
   const navigation = useNavigation<OnboardingScreenNavigationProp>();
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  
+
   const [currentStep, setCurrentStep] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -75,7 +78,7 @@ const OnboardingScreen: React.FC = () => {
       // Reset animation values for new step
       slideAnim.setValue(SCREEN_WIDTH);
       fadeAnim.setValue(0);
-      
+
       // Animate slide in from right
       Animated.parallel([
         Animated.timing(slideAnim, {
@@ -102,7 +105,7 @@ const OnboardingScreen: React.FC = () => {
     } else {
       if (isAnimating) return; // Prevent multiple rapid clicks
       setIsAnimating(true);
-      
+
       // Animate slide out to left, then change step
       Animated.parallel([
         Animated.timing(slideAnim, {
@@ -128,8 +131,8 @@ const OnboardingScreen: React.FC = () => {
   return (
     <Container>
       {/* Logo - consistent across all steps */}
-      <IVLogo mt={s(40)} />
-      
+      <IVLogo mt={Platform.OS === 'android' ? s(30) : s(0)} />
+
       {/* Image Container with Animation */}
       <View
         style={[
@@ -253,4 +256,3 @@ const createStyles = (theme: any) =>
   });
 
 export default OnboardingScreen;
-
